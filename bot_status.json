@@ -1,0 +1,35 @@
+{
+  "state": "COMPLETED",
+  "message": "✅ 총 5개 공실 구간에 대한 자동 세팅 프로세스가 완료되었습니다! 열린 크롬 창에서 변경된 달력을 확인하실 수 있습니다.",
+  "updatedAt": "2026-10-31T00:47:00.939Z",
+  "listingId": "1714436404764677191",
+  "totalWindows": 5,
+  "completedWindows": 5,
+  "resultsLog": [
+    {
+      "window": "2026-11-04 ~ 2026-11-06",
+      "targetPrice": 140000,
+      "status": "자동 입력 완료"
+    },
+    {
+      "window": "2026-11-10 ~ 2026-11-12",
+      "targetPrice": 140000,
+      "status": "자동 입력 완료"
+    },
+    {
+      "window": "2026-11-15 ~ 2026-11-16",
+      "targetPrice": 140000,
+      "status": "자동 입력 완료"
+    },
+    {
+      "window": "2026-11-23 ~ 2026-11-25",
+      "targetPrice": 140000,
+      "status": "자동 입력 완료"
+    },
+    {
+      "window": "2026-11-29 ~ 2026-12-03",
+      "targetPrice": 141000,
+      "status": "자동 입력 완료"
+    }
+  ]
+}

@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AirAuto (에어오토) | 에어비앤비 공실 원인 진단 & 월 1,900원 자동 세팅</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+  <style>
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .airbnb-btn {
+      background: linear-gradient(90deg, #ff385c 0%, #e31c5f 100%);
+    }
+    .airbnb-btn:hover {
+      background: linear-gradient(90deg, #e31c5f 0%, #c8104d 100%);
+    }
+    .step-badge {
+      background: #fff1f2;
+      color: #e11d48;
+      border: 1px solid #fecdd3;
+    }
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-28">
+
+  <!-- 상단 네비게이션 -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl airbnb-btn flex items-center justify-center font-black text-white text-lg">A</div>
+        <div>
+          <span class="font-extrabold text-lg text-slate-900">AirAuto</span>
+          <span class="ml-1.5 text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200">AI 공동호스트</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:inline text-xs text-slate-500">숙소 1개당 <strong class="text-slate-900">월 1,900원</strong></span>
+        <button onclick="openSubscribeModal()" class="airbnb-btn px-4 py-2 rounded-xl text-white font-bold text-xs sm:text-sm shadow-sm">
+          월 1,900원 자동 세팅 켜기
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 상단 검색 영역 -->
+  <section class="bg-white border-b border-slate-200 py-8 sm:py-10 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+      <span class="inline-block px-3 py-1 rounded-full bg-rose-50 text-rose-600 font-bold text-xs mb-3 border border-rose-200">
+        🔍 내 에어비앤비 링크만 넣으면 5초 만에 무료 진단
+      </span>
+      <h1 class="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mb-2">
+        왜 내 숙소는 <span class="text-rose-600">그 날짜만</span> 예약이 안 찰까?
+      </h1>
+      <p class="text-slate-500 text-sm sm:text-base mb-6">
+        내 숙소의 빈 날짜 원인과 <strong class="text-slate-800">반경 1km 주변 경쟁 숙소들의 실제 가격</strong>을 한눈에 비교해 드립니다.
+      </p>
+
+      <!-- 입력창 -->
+      <div class="max-w-3xl mx-auto bg-slate-50 p-2.5 rounded-2xl border border-slate-300 shadow-sm flex flex-col sm:flex-row gap-2">
+        <input
+          id="listingUrlInput"
+          type="text"
+          value="https://www.airbnb.co.kr/rooms/1714436404764677191"
+          placeholder="에어비앤비 숙소 링크(URL) 또는 번호를 붙여넣으세요"
+          class="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 text-sm focus:outline-none focus:border-rose-500"
+        />
+        <select
+          id="targetMonthSelect"
+          class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-bold focus:outline-none"
+        >
+          <option value="2026-11" selected>11월 예약 분석</option>
+          <option value="2026-12">12월 예약 분석</option>
+          <option value="2027-01">1월 예약 분석</option>
+        </select>
+        <button
+          id="analyzeBtn"
+          onclick="runAnalysis()"
+          class="airbnb-btn px-6 py-3 rounded-xl font-extrabold text-white text-sm sm:text-base shadow-md whitespace-nowrap"
+        >
+          <span id="analyzeBtnText">무료 진단하기</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 로딩 화면 -->
+  <div id="loadingBox" class="hidden max-w-3xl mx-auto px-4 py-16 text-center">
+    <div class="inline-block w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+    <h3 class="text-lg font-extrabold text-slate-800">내 숙소 달력과 반경 1km 주변 숙소 요금을 실시간 조회 중입니다...</h3>
+    <p class="text-xs text-slate-500 mt-1">약 4~6초 정도 소요됩니다</p>
+  </div>
+
+  <!-- 에러 메시지 -->
+  <div id="errorBox" class="hidden max-w-3xl mx-auto px-4 my-6">
+    <div class="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium" id="errorText"></div>
+  </div>
+
+  <!-- 메인 결과 영역 (한눈에 들어오는 4단계 구성) -->
+  <main id="resultContainer" class="hidden max-w-5xl mx-auto px-4 pt-8 space-y-8">
+
+    <!-- 내 숙소 요약 바 -->
+    <div class="card p-5 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+        <div class="flex items-center gap-4">
+          <img id="listingThumb" src="" alt="숙소 사진" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-slate-200 hidden sm:block" />
+          <div>
+            <div class="flex flex-wrap items-center gap-1.5 mb-1">
+              <span id="guestFavBadge" class="hidden px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-bold">🏆 게스트 선호</span>
+              <span id="ratingBadge" class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-bold">★ 5.0</span>
+              <span id="hostBadge" class="text-xs text-slate-500"></span>
+            </div>
+            <h2 id="listingTitle" class="text-base sm:text-xl font-extrabold text-slate-900"></h2>
+            <p id="listingSpecs" class="text-xs text-slate-500 mt-0.5"></p>
+          </div>
+        </div>
+        <a id="originalAirbnbLink" href="#" target="_blank" class="self-start sm:self-center px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold whitespace-nowrap transition">
+          내 숙소 페이지 열기 ↗
+        </a>
+      </div>
+
+      <!-- 핵심 숫자 3개 (아주 심플하게) -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-5">
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="text-xs font-semibold text-slate-500" id="kpiMonthLabel">11월 현재 예약률</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-2xl sm:text-3xl font-black text-slate-900" id="kpiOccupancy">70%</span>
+            <span class="text-xs font-bold text-rose-600" id="kpiOpenDaysBadge">빈 날 9박 남음</span>
+          </div>
+          <div class="text-xs text-slate-500 mt-1" id="kpiOccupancySub">30일 중 21박 예약 완료</div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="text-xs font-semibold text-slate-500">내 숙소 vs 주변 1km 평균 요금</div>
+          <div class="flex items-baseline gap-2 mt-1">
+            <span class="text-2xl sm:text-3xl font-black text-rose-600" id="kpiAvgPrice">₩146,800</span>
+            <span class="text-xs text-slate-500" id="kpiCompAvgSub">주변 평균 ₩118,000</span>
+          </div>
+          <div class="text-xs font-semibold text-amber-700 mt-1" id="kpiCheaperCompText">주변 경쟁 숙소 중 7곳이 내 숙소보다 저렴함</div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-rose-50/70 border border-rose-200">
+          <div class="text-xs font-bold text-rose-600">빈 날 방치 시 놓치는 매출</div>
+          <div class="text-2xl sm:text-3xl font-black text-rose-600 mt-1" id="kpiLostRevenue">₩1,325,400</div>
+          <div class="text-xs text-rose-700 mt-1">월 1,900원 자동 세팅으로 회수 가능한 금액</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 1. 언제 비어있고 왜 안 팔렸나? -->
+    <div class="card p-5 sm:p-7">
+      <div class="mb-5">
+        <span class="step-badge px-2.5 py-1 rounded-full text-xs font-extrabold">진단 1단계 · 내 달력 & 공실 원인</span>
+        <h3 class="text-lg sm:text-xl font-black text-slate-900 mt-2">
+          현재 남아있는 빈 날짜와 예약이 안 걸린 이유입니다
+        </h3>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- 왼쪽: 직관적인 달력 (5칸) -->
+        <div class="lg:col-span-5 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <div class="flex items-center justify-between mb-3">
+            <span class="font-extrabold text-sm text-slate-800" id="calTitleText">2026년 11월 달력</span>
+            <div class="flex items-center gap-2.5 text-xs">
+              <span class="flex items-center gap-1 text-slate-400"><span class="w-2.5 h-2.5 rounded-sm bg-slate-200 inline-block"></span>예약완료</span>
+              <span class="flex items-center gap-1 text-rose-600 font-bold"><span class="w-2.5 h-2.5 rounded-sm bg-rose-500 inline-block"></span>빈 날(공실)</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400 mb-1.5">
+            <div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-600">토</div><div class="text-rose-600">일</div>
+          </div>
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-center"></div>
+        </div>
+
+        <!-- 오른쪽: 쉬운 공실 원인 설명 (7칸) -->
+        <div class="lg:col-span-7 space-y-3" id="diagnosticsList"></div>
+      </div>
+    </div>
+
+    <!-- STEP 1.5. 바로 옆집 / 같은 건물(거리 0m) 초근접 라이벌 집중 해부 -->
+    <div id="ultraCloseSection" class="card p-5 sm:p-7 border-2 border-amber-400 bg-gradient-to-br from-amber-50/50 via-white to-white">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-amber-200/70">
+        <div>
+          <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-xs font-extrabold">
+            🏢 초근접 라이벌 전체 리스트 · 같은 건물 및 바로 옆 블록 (0m~150m 전체)
+          </span>
+          <h3 class="text-lg sm:text-xl font-black text-slate-900 mt-2">
+            내 숙소와 <span class="text-amber-700">같은 건물·바로 옆 건물</span>에 있는 숙소 전체 성적표입니다
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1">
+            ※ 에어비앤비는 호스트의 '정확한 위치 표시' 설정에 따라 <strong>같은 건물이어도 지도 좌표를 8m~110m 옆으로 살짝 흔들어서(분산)</strong> 표시합니다.
+          </p>
+        </div>
+      </div>
+
+      <div id="ultraCloseGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+
+    <!-- STEP 2. 반경 1km 주변 경쟁 숙소 직접 비교 -->
+    <div class="card p-5 sm:p-7">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5 pb-4 border-b border-slate-100">
+        <div>
+          <span class="step-badge px-2.5 py-1 rounded-full text-xs font-extrabold">진단 2단계 · 반경 1km 경쟁 숙소 실시간 비교</span>
+          <h3 class="text-lg sm:text-xl font-black text-slate-900 mt-2">
+            손님이 내 숙소 대신 보고 있는 <span class="text-rose-600">주변 1km 실제 경쟁 숙소</span>들입니다
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1" id="compSectionSub">
+            내 빈 날짜에 게스트가 검색했을 때 지도에 함께 뜨는 숙소들의 실제 1박 요금입니다. (클릭하면 해당 에어비앤비로 이동합니다)
+          </p>
+        </div>
+        <div class="px-3.5 py-2 rounded-xl bg-slate-100 text-xs font-bold text-slate-700 whitespace-nowrap" id="compSummaryPill">
+          내 숙소 요금: ₩143,100/박
+        </div>
+      </div>
+
+      <!-- 경쟁 숙소 카드 그리드 -->
+      <div id="competitorsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+    </div>
+
+    <!-- STEP 3. AI가 오늘 밤 어떻게 고쳐주나? (Before -> After) -->
+    <div class="card p-5 sm:p-7 border-2 border-rose-500">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-200">
+        <div>
+          <span class="step-badge px-2.5 py-1 rounded-full text-xs font-extrabold">처방 3단계 · 월 1,900원 자동 세팅 미리보기</span>
+          <h3 class="text-lg sm:text-2xl font-black text-slate-900 mt-2">
+            내 숙소 <span class="text-rose-600">최저 방어 요금</span>만 정해주시면 이렇게 자동 수정됩니다
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">
+            주변 1km 시세에 맞춰 빈 날 요금을 내리더라도, 설정하신 최저 방어선 밑으로는 절대 내려가지 않습니다.
+          </p>
+        </div>
+
+        <!-- 슬라이더 -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 min-w-[260px]">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-slate-600">🛡️ 내 최저 방어 요금 (1박)</span>
+            <span id="minFloorValueLabel" class="text-lg font-black text-rose-600">₩110,000</span>
+          </div>
+          <input
+            id="minFloorSlider"
+            type="range"
+            min="70000"
+            max="150000"
+            step="5000"
+            value="110000"
+            oninput="updateSimulatorTable()"
+            class="w-full accent-rose-600 cursor-pointer"
+          />
+          <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+            <span>₩70,000</span>
+            <span>권장: ₩110,000</span>
+            <span>₩150,000</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 빈 날짜 구간별 Before -> After 표 -->
+      <div class="overflow-x-auto mt-4">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-xs text-slate-500">
+              <th class="py-3 px-3">남은 빈 날짜</th>
+              <th class="py-3 px-3">현재 내 요금 (Before)</th>
+              <th class="py-3 px-3 text-rose-600 font-extrabold">AI 자동 수정 요금 (After)</th>
+              <th class="py-3 px-3">AI가 자동으로 해주는 세팅</th>
+            </tr>
+          </thead>
+          <tbody id="simulatorTableBody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+
+      <!-- 하단 실시간 봇 실행 & 구독 신청 박스 -->
+      <div class="mt-6 p-5 rounded-2xl bg-slate-900 text-white border border-slate-800 space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-extrabold mb-1.5">
+              🤖 내 컴퓨터 전용 자동 세팅 봇 준비 완료
+            </div>
+            <div class="text-sm sm:text-base font-black text-white">
+              버튼을 누르면 크롬 창이 열리고 내 에어비앤비 달력에 위 요금을 실제로 자동 입력합니다!
+            </div>
+            <div class="text-xs text-slate-400 mt-1">
+              최초 1회만 열린 크롬 창에서 로그인해 두시면, 다음부터는 로그인 없이 1클릭으로 자동 수정됩니다.
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <button
+              id="runLocalBotBtn"
+              onclick="triggerLocalBot('APPLY_SETTINGS')"
+              class="airbnb-btn px-5 py-3.5 rounded-xl font-black text-white text-sm sm:text-base whitespace-nowrap shadow-lg flex-1 sm:flex-none"
+            >
+              ⚡ 지금 내 에어비앤비에 자동 세팅 실행하기
+            </button>
+            <button
+              onclick="openSubscribeModal()"
+              class="px-4 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-slate-200 text-xs sm:text-sm whitespace-nowrap transition"
+            >
+              월 1,900원 구독 안내 →
+            </button>
+          </div>
+        </div>
+
+        <!-- 봇 실시간 상태 표시 바 -->
+        <div id="botStatusBox" class="hidden p-4 rounded-xl bg-slate-800/90 border border-slate-700 text-xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-emerald-400 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block"></span>
+              <span id="botStateBadge">RUNNING</span>
+            </span>
+            <span id="botUpdatedTime" class="text-slate-400">방금 전</span>
+          </div>
+          <div id="botStatusMessage" class="text-sm font-bold text-white">크롬 자동화 봇을 실행하고 있습니다...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 경쟁 숙소 1:1 상세 비교 모달 (날짜별 판매가 & 내 집과의 금액 차이) -->
+  <div id="compDetailModal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div class="bg-white max-w-4xl w-full max-h-[90vh] rounded-3xl border border-slate-200 shadow-2xl flex flex-col overflow-hidden relative">
+      <!-- 모달 헤더 -->
+      <div class="px-6 py-4 bg-slate-900 text-white flex items-center justify-between">
+        <div>
+          <span class="text-[11px] font-extrabold px-2 py-0.5 rounded bg-rose-500 text-white mr-2">1:1 정밀 해부</span>
+          <span id="compModalTitle" class="font-extrabold text-sm sm:text-base">경쟁 숙소 vs 내 숙소 날짜별 가격·최소박수 비교</span>
+        </div>
+        <button onclick="closeCompDetailModal()" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+      </div>
+
+      <!-- 로딩 표시 -->
+      <div id="compModalLoading" class="p-14 text-center">
+        <div class="inline-block w-9 h-9 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <div class="text-sm font-bold text-slate-800">이 숙소의 전체 달력(최소 박수)과 날짜별 2인·4인 판매 요금을 실시간 추출 중입니다...</div>
+        <div class="text-xs text-slate-500 mt-1">약 3~4초 소요됩니다</div>
+      </div>
+
+      <!-- 모달 본문 -->
+      <div id="compModalBody" class="hidden p-5 sm:p-6 overflow-y-auto space-y-6">
+        <!-- 상단 핵심 요약 비교 카드 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-bold text-slate-500 mb-1">🏠 내 숙소 (기준)</div>
+            <div id="compModalMyStats" class="text-base font-black text-slate-900"></div>
+            <div id="compModalMyPrice" class="text-xs text-slate-600 mt-1"></div>
+          </div>
+          <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-300">
+            <div class="text-xs font-bold text-amber-900 mb-1">🏢 선택한 경쟁 숙소</div>
+            <div id="compModalTargetStats" class="text-base font-black text-slate-900"></div>
+            <div id="compModalTargetPrice" class="text-xs text-slate-700 mt-1"></div>
+          </div>
+          <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200">
+            <div class="text-xs font-bold text-rose-700 mb-1">💡 내 집과의 결정적 차이</div>
+            <div id="compModalDiffHeadline" class="text-base font-black text-rose-600"></div>
+            <div id="compModalDiffSub" class="text-xs text-rose-800 mt-1"></div>
+          </div>
+        </div>
+
+        <!-- 1. 이 집이 현재 실제로 열어둔 빈 날짜 구간별 2인/4인 요금 & 내 집과의 차이 -->
+        <div>
+          <h4 class="font-black text-sm sm:text-base text-slate-900 mb-2">
+            📌 1) 이 경쟁 숙소의 실제 판매 구간별 가격 (2인 vs 4인) & 내 숙소와의 금액 차이
+          </h4>
+          <div class="overflow-x-auto border border-slate-200 rounded-2xl">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-bold">
+                  <th class="py-2.5 px-3">경쟁 숙소 빈 구간</th>
+                  <th class="py-2.5 px-3">최소 박수 설정</th>
+                  <th class="py-2.5 px-3">경쟁사 2인 요금</th>
+                  <th class="py-2.5 px-3">경쟁사 4인 요금</th>
+                  <th class="py-2.5 px-3">내 숙소 요금 (기준)</th>
+                  <th class="py-2.5 px-3 text-rose-600">내 숙소와 금액 차이</th>
+                </tr>
+              </thead>
+              <tbody id="compModalWindowsBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. 1일 ~ 30일 전 날짜 1:1 비교표 -->
+        <div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <h4 class="font-black text-sm sm:text-base text-slate-900">
+              📅 2) 1일~말일까지 날짜별 예약 상태 · 최소박수 · 판매 금액 1:1 대조표
+            </h4>
+            <span class="text-xs text-slate-500">※ 내가 비어있는 날(공실)에 이 집은 얼마를 받고 있는지 색깔로 강조됩니다</span>
+          </div>
+          <div class="overflow-x-auto border border-slate-200 rounded-2xl max-h-96">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="sticky top-0 bg-slate-800 text-white font-bold">
+                <tr>
+                  <th class="py-2.5 px-3">날짜 (요일)</th>
+                  <th class="py-2.5 px-3">내 숙소 상태 (최소박수)</th>
+                  <th class="py-2.5 px-3">내 숙소 1박 요금</th>
+                  <th class="py-2.5 px-3">경쟁 숙소 상태 (최소박수)</th>
+                  <th class="py-2.5 px-3">경쟁 숙소 2인 (4인) 요금</th>
+                  <th class="py-2.5 px-3">내 집 대비 가격 차이</th>
+                </tr>
+              </thead>
+              <tbody id="compModalDailyBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 구독 신청 & 공동호스트 초대 모달 -->
+  <div id="subscribeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white max-w-lg w-full rounded-3xl p-6 border border-slate-200 shadow-2xl relative">
+      <button onclick="closeSubscribeModal()" class="absolute top-4 right-5 text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
+
+      <!-- 모달 1단계: 숙소 대수 선택 및 결제 -->
+      <div id="modalStep1">
+        <span class="step-badge px-2.5 py-1 rounded-full text-xs font-extrabold">STEP 1 / 2 · 숙소 개수 확인</span>
+        <h3 class="text-xl font-black text-slate-900 mt-2 mb-1">AirAuto AI 자동 세팅 시작하기</h3>
+        <p class="text-xs text-slate-500 mb-5">등록하시는 숙소(Listing) 1개당 월 1,900원이 과금됩니다. (예: 3개 운영 시 월 5,700원)</p>
+
+        <div class="space-y-2.5 mb-4">
+          <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center justify-between text-xs text-slate-500 mb-0.5">
+              <span class="font-semibold">숙소 #1 (진단 완료)</span>
+              <span class="text-rose-600 font-bold">월 ₩1,900</span>
+            </div>
+            <div id="modalListingTitle" class="text-sm font-extrabold text-slate-900 truncate"></div>
+          </div>
+
+          <div id="extraListingsBox" class="space-y-2"></div>
+
+          <button onclick="addExtraListingSlot()" class="w-full py-2.5 rounded-xl border border-dashed border-slate-300 hover:border-rose-400 text-xs font-bold text-slate-600 hover:text-rose-600 transition">
+            + 운영 중인 다른 숙소 추가하기 (숙소당 +₩1,900/월)
+          </button>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 mb-5 space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">자동 세팅 숙소 수</span>
+            <span id="modalSlotCount" class="font-bold text-slate-900">1개 숙소</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">설정한 최저 방어 요금</span>
+            <span id="modalFloorPrice" class="font-bold text-rose-600">₩110,000 / 박</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-200 text-sm">
+            <span class="font-extrabold text-slate-900">월 결제 금액</span>
+            <span id="modalFinalPrice" class="font-black text-rose-600 text-base">월 ₩1,900</span>
+          </div>
+        </div>
+
+        <button onclick="goToModalStep2()" class="w-full py-3.5 rounded-xl airbnb-btn font-black text-white text-sm shadow-md">
+          다음: AI 공동호스트 봇 초대하기 →
+        </button>
+      </div>
+
+      <!-- 모달 2단계: 공동호스트 봇 초대 안내 -->
+      <div id="modalStep2" class="hidden">
+        <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold">STEP 2 / 2 · 공동호스트 초대</span>
+        <h3 class="text-xl font-black text-slate-900 mt-2 mb-1">🎉 전용 AI 공동호스트가 배정되었습니다!</h3>
+        <p class="text-xs text-slate-500 mb-4">
+          에어비앤비 앱의 <strong class="text-slate-800">[공동호스트 초대 → 전체 권한]</strong>에 아래 이메일을 입력해 초대해 주세요.
+        </p>
+
+        <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 mb-4">
+          <div class="text-xs text-emerald-800 font-semibold mb-1">배정된 AI 공동호스트 이메일</div>
+          <div class="flex items-center justify-between gap-2">
+            <code class="text-base font-black text-emerald-700">manager01@airauto.kr</code>
+            <button onclick="copyBotEmail()" id="copyBotBtn" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition">
+              이메일 복사
+            </button>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1.5 mb-5">
+          <div class="font-extrabold text-slate-900">🔒 왜 안심하고 초대해도 되나요?</div>
+          <p>• 내 에어비앤비 아이디·비밀번호를 알려줄 필요가 없습니다.</p>
+          <p>• 공동호스트는 <strong class="text-slate-900">호스트의 정산 계좌(통장)를 절대 열람하거나 바꿀 수 없습니다.</strong></p>
+          <p>• 원할 때 언제든 공동호스트에서 삭제하면 즉시 연결이 끊어집니다.</p>
+        </div>
+
+        <button onclick="closeSubscribeModal()" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 font-bold text-white text-sm">
+          확인 완료
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentAnalysisData = null;
+    let extraSlots = [];
+
+    function formatKRW(num) {
+      if (!num && num !== 0) return '-';
+      return '₩' + Number(num).toLocaleString('ko-KR');
+    }
+
+    async function runAnalysis() {
+      const urlInput = document.getElementById('listingUrlInput').value.trim();
+      const ym = document.getElementById('targetMonthSelect').value.split('-');
+      const year = ym[0];
+      const month = parseInt(ym[1], 10);
+
+      if (!urlInput) {
+        alert('에어비앤비 숙소 링크를 입력해주세요.');
+        return;
+      }
+
+      document.getElementById('loadingBox').classList.remove('hidden');
+      document.getElementById('resultContainer').classList.add('hidden');
+      document.getElementById('errorBox').classList.add('hidden');
+      document.getElementById('analyzeBtn').disabled = true;
+      document.getElementById('analyzeBtnText').textContent = '진단 중...';
+
+      try {
+        let json = null;
+        try {
+          const res = await fetch(`/api/analyze?url=${encodeURIComponent(urlInput)}&year=${year}&month=${month}`);
+          if (res.ok) {
+            json = await res.json();
+          }
+        } catch (apiErr) {
+          // Local backend not running (e.g. GitHub Pages static mode) -> fall back to static snapshot
+        }
+
+        if (!json || !json.ok) {
+          const snapRes = await fetch(`./data/analyze_${year}_${month}.json`);
+          if (!snapRes.ok) {
+            const fallbackRes = await fetch(`./data/analyze_2026_11.json`);
+            json = await fallbackRes.json();
+          } else {
+            json = await snapRes.json();
+          }
+        }
+
+        if (!json || !json.ok) {
+          throw new Error(json?.error || '분석에 실패했습니다.');
+        }
+        currentAnalysisData = json.data;
+        renderAnalysisResult(json.data);
+      } catch (err) {
+        document.getElementById('errorBox').classList.remove('hidden');
+        document.getElementById('errorText').textContent = '오류: ' + err.message;
+      } finally {
+        document.getElementById('loadingBox').classList.add('hidden');
+        document.getElementById('analyzeBtn').disabled = false;
+        document.getElementById('analyzeBtnText').textContent = '무료 진단하기';
+      }
+    }
+
+    function renderAnalysisResult(data) {
+      const { meta, summary, windows, competitors, diagnostics, calendarDays, targetYear, targetMonth } = data;
+      document.getElementById('resultContainer').classList.remove('hidden');
+
+      // 1. 숙소 기본 정보
+      const thumb = document.getElementById('listingThumb');
+      if (meta.thumbnailUrl) {
+        thumb.src = meta.thumbnailUrl;
+        thumb.classList.remove('hidden');
+      }
+      const gfBadge = document.getElementById('guestFavBadge');
+      if (meta.isGuestFavorite) gfBadge.classList.remove('hidden');
+      else gfBadge.classList.add('hidden');
+
+      document.getElementById('ratingBadge').textContent = meta.ratingAverage
+        ? `★ ${meta.ratingAverage} (후기 ${meta.ratingCount}개)`
+        : '신규 숙소';
+      document.getElementById('hostBadge').textContent = `호스트: ${meta.hostName} 님`;
+      document.getElementById('listingTitle').textContent = meta.title;
+      document.getElementById('listingSpecs').textContent = `${meta.locationTitle} · ${(meta.overviewItems || []).join(' · ')}`;
+      document.getElementById('originalAirbnbLink').href = `https://www.airbnb.co.kr/rooms/${meta.listingId}`;
+      document.getElementById('modalListingTitle').textContent = meta.title;
+
+      // 2. 핵심 숫자 3개
+      document.getElementById('kpiMonthLabel').textContent = `${targetMonth}월 현재 예약률`;
+      document.getElementById('kpiOccupancy').textContent = `${summary.occupancyRate}%`;
+      document.getElementById('kpiOpenDaysBadge').textContent = `빈 날 ${summary.openDays}박 남음`;
+      document.getElementById('kpiOccupancySub').textContent = `${summary.totalDays}일 중 ${summary.bookedDays}박 예약 완료`;
+
+      document.getElementById('kpiAvgPrice').textContent = formatKRW(summary.avgOpenPerNightPrice);
+      document.getElementById('kpiCompAvgSub').textContent = `주변 평균 ${formatKRW(summary.competitorAvgPrice)}`;
+      document.getElementById('kpiCheaperCompText').textContent =
+        `반경 1km 경쟁 숙소 ${summary.totalCompetitorCount}곳 중 ${summary.cheaperCompetitorCount}곳이 내 숙소보다 저렴합니다`;
+      document.getElementById('kpiLostRevenue').textContent = formatKRW(summary.estimatedLostRevenue);
+
+      // 슬라이더 기본값 세팅 (내 현재 평균 요금의 약 85% 수준으로, 절대 현재 최저 요금보다 높지 않게 설정)
+      const minOpenPrice = Math.min(...(windows.map(w => (w.pricing && w.pricing.perNightPrice) || summary.avgOpenPerNightPrice)));
+      const suggestedFloor = Math.max(70000, Math.min(minOpenPrice - 15000, Math.round((minOpenPrice * 0.85) / 5000) * 5000));
+      document.getElementById('minFloorSlider').value = suggestedFloor;
+
+      // 3. 달력 렌더링
+      document.getElementById('calTitleText').textContent = `${targetYear}년 ${targetMonth}월 달력`;
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+      if (calendarDays.length > 0) {
+        const firstWeekday = calendarDays[0].weekday;
+        for (let p = 0; p < firstWeekday; p++) {
+          const empty = document.createElement('div');
+          empty.className = 'h-12 rounded-lg';
+          grid.appendChild(empty);
+        }
+        calendarDays.forEach(d => {
+          const cell = document.createElement('div');
+          if (d.available) {
+            cell.className = 'h-12 rounded-xl bg-rose-500 text-white flex flex-col items-center justify-center shadow-sm';
+            cell.innerHTML = `
+              <span class="text-xs font-black leading-none">${d.dayNum}</span>
+              <span class="text-[10px] font-bold mt-0.5 ${d.minNights >= 2 ? 'text-amber-200' : 'text-rose-100'}">
+                ${d.minNights >= 2 ? `${d.minNights}박이상` : '빈날'}
+              </span>
+            `;
+          } else {
+            cell.className = 'h-12 rounded-xl bg-white border border-slate-200/80 text-slate-400 flex flex-col items-center justify-center';
+            cell.innerHTML = `
+              <span class="text-xs font-semibold line-through leading-none">${d.dayNum}</span>
+              <span class="text-[9px] text-slate-400 mt-0.5">예약됨</span>
+            `;
+          }
+          grid.appendChild(cell);
+        });
+      }
+
+      // 4. 공실 원인 카드
+      const diagList = document.getElementById('diagnosticsList');
+      diagList.innerHTML = '';
+      diagnostics.forEach(diag => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-2xl bg-slate-50 border border-slate-200';
+        card.innerHTML = `
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-xs font-extrabold">${diag.badge}</span>
+          </div>
+          <h4 class="font-extrabold text-sm sm:text-base text-slate-900 mb-1">${diag.title}</h4>
+          <p class="text-xs text-slate-600 leading-relaxed mb-2.5">${diag.description}</p>
+          <div class="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl inline-block">
+            ✅ 해결책: ${diag.autoAction}
+          </div>
+        `;
+        diagList.appendChild(card);
+      });
+
+      // 4.5. 같은 건물 / 바로 옆집 (초근접 라이벌) 렌더링
+      const ultraSection = document.getElementById('ultraCloseSection');
+      const ultraGrid = document.getElementById('ultraCloseGrid');
+      ultraGrid.innerHTML = '';
+      const ultraNeighbors = data.ultraCloseNeighbors || [];
+      const myBasePrice = summary.avgOpenPerNightPrice;
+
+      if (ultraNeighbors.length > 0) {
+        ultraSection.classList.remove('hidden');
+        ultraNeighbors.forEach(nb => {
+          const distLabel = nb.distanceM <= 10
+            ? `🏢 같은 건물 (좌표오차 ${nb.distanceM}m)`
+            : `🏢 같은 건물/블록 (좌표오차 ${nb.distanceM}m)`;
+          const occDiff = Math.round((nb.occupancyRate - summary.occupancyRate) * 10) / 10;
+          const occBadge = occDiff > 0
+            ? `<span class="px-2 py-0.5 rounded-md bg-rose-100 text-rose-700 text-xs font-extrabold">내 숙소보다 예약률 +${occDiff}%p 높음</span>`
+            : occDiff < 0
+            ? `<span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-600 text-xs font-bold">내 숙소보다 예약률 ${occDiff}%p 낮음</span>`
+            : `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-bold">내 숙소와 예약률 동일 (${nb.occupancyRate}%)</span>`;
+
+          // 내 집 대비 1박 가격 차이 계산
+          let priceCompareHtml = '';
+          if (nb.price2p) {
+            const pDiff = nb.price2p - myBasePrice;
+            const diffBadge = pDiff < 0
+              ? `<span class="px-2 py-0.5 rounded-md bg-emerald-600 text-white text-xs font-extrabold">내 숙소(${formatKRW(myBasePrice)})보다 ${formatKRW(Math.abs(pDiff))} 더 저렴!</span>`
+              : `<span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-xs font-bold">내 숙소보다 +${formatKRW(pDiff)} 비쌈</span>`;
+
+            const extraFeeText = nb.extraGuestFeePerPerson > 0
+              ? `4인 시 ${formatKRW(nb.price4p)} (1인당 +${formatKRW(nb.extraGuestFeePerPerson)} 추가)`
+              : `4인도 ${formatKRW(nb.price2p)} (인원 추가비 없음)`;
+
+            priceCompareHtml = `
+              <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                <div class="flex flex-wrap items-center justify-between gap-1">
+                  <div class="text-xs text-slate-500">
+                    평일 2인 기준가:
+                    ${nb.origPrice2p ? `<span class="line-through text-slate-400 mr-1">${formatKRW(nb.origPrice2p)}</span>` : ''}
+                    <strong class="text-base font-black text-slate-900">${formatKRW(nb.price2p)}</strong>/박
+                  </div>
+                  ${diffBadge}
+                </div>
+                <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-600 pt-1 border-t border-slate-200/70">
+                  <span>👥 <strong>인원 요금 규칙:</strong> ${extraFeeText}</span>
+                  ${nb.weekendPrice2p ? `<span class="text-rose-600 font-bold">금·토 주말: ${formatKRW(nb.weekendPrice2p)}/박</span>` : ''}
+                </div>
+              </div>
+            `;
+          } else {
+            priceCompareHtml = `
+              <div class="p-3 rounded-xl bg-rose-50/70 border border-rose-200 text-xs font-bold text-rose-700 flex items-center justify-between">
+                <span>🔥 현재 단기 예약 가능일 없음 (완판 또는 장기전용)</span>
+                <span>우측 [날짜별 상세 비교]에서 확인 →</span>
+              </div>
+            `;
+          }
+
+          const secretPills = [
+            `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[11px] font-bold">📌 최소박수: 평일 ${nb.weekdayMinNights || '1~2박'} / 주말 ${nb.weekendMinNights || '2박'}</span>`
+          ];
+          if (nb.hasDiscountBadge) {
+            secretPills.push('<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[11px] font-bold">✨ 취소선 할인배지 ON</span>');
+          }
+          if (nb.canInstantBook) {
+            secretPills.push('<span class="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[11px] font-bold">⚡ 즉시예약 ON</span>');
+          }
+          if (nb.nextMonthOccupancyRate !== undefined) {
+            secretPills.push(`<span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 text-[11px] font-bold">다음달 선예약률 ${nb.nextMonthOccupancyRate}%</span>`);
+          }
+
+          const card = document.createElement('div');
+          card.className = 'p-4 rounded-2xl border-2 border-amber-300 hover:border-rose-500 bg-white shadow-sm hover:shadow-md transition flex flex-col justify-between gap-3';
+          card.innerHTML = `
+            <div class="flex items-start gap-3.5">
+              <img src="${nb.thumbnailUrl || ''}" alt="옆집숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                  <span class="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[11px] font-extrabold">${distLabel}</span>
+                  <span class="text-xs font-bold text-slate-700">★ ${nb.rating}</span>
+                </div>
+                <div class="font-extrabold text-sm text-slate-900 truncate">${nb.name}</div>
+                <div class="text-xs text-slate-500 truncate mt-0.5">${nb.specs}</div>
+              </div>
+            </div>
+
+            ${priceCompareHtml}
+
+            <div class="pt-2 border-t border-slate-100 flex flex-col gap-2.5">
+              <div class="flex items-center justify-between">
+                <div class="text-xs text-slate-600">
+                  ${targetMonth}월 성적: <strong class="text-slate-900 font-black text-sm">${nb.bookedDays}박 완료 / 잔여 ${nb.openDays}박 (${nb.occupancyRate}%)</strong>
+                </div>
+                ${occBadge}
+              </div>
+              <div class="flex flex-wrap gap-1">
+                ${secretPills.join('')}
+              </div>
+              <div class="flex items-center gap-2 pt-1">
+                <button
+                  onclick="openCompDetailModal('${nb.listingId}')"
+                  class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-extrabold text-xs transition shadow-sm"
+                >
+                  🔍 날짜별 판매가 & 내 집과 1:1 비교표 보기
+                </button>
+                <a
+                  href="${nb.url}"
+                  target="_blank"
+                  class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition whitespace-nowrap"
+                >
+                  에어비앤비 ↗
+                </a>
+              </div>
+            </div>
+          `;
+          ultraGrid.appendChild(card);
+        });
+      } else {
+        ultraSection.classList.add('hidden');
+      }
+
+      // 5. 반경 1km 주변 경쟁 숙소 렌더링
+      const myPrice = summary.avgOpenPerNightPrice;
+      document.getElementById('compSummaryPill').textContent = `현재 내 숙소 평균: ${formatKRW(myPrice)}/박`;
+      document.getElementById('compSectionSub').textContent =
+        `내 빈 날짜(${summary.competitorCheckIn.slice(5)}~${summary.competitorCheckOut.slice(5)}, 성인 2명 기준)에 반경 1km 안에서 함께 검색되는 실제 경쟁 숙소 ${competitors.length}곳입니다.`;
+
+      const compGrid = document.getElementById('competitorsGrid');
+      compGrid.innerHTML = '';
+      competitors.forEach((c, idx) => {
+        const diff = c.perNightPrice - myPrice;
+        const isCheaper = diff < 0;
+        const diffBadge = isCheaper
+          ? `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-extrabold">내 숙소보다 ${formatKRW(Math.abs(diff))} 더 저렴</span>`
+          : `<span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-xs font-bold">내 숙소보다 ${formatKRW(diff)} 비쌈</span>`;
+
+        const item = document.createElement('div');
+        item.className = 'p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 hover:shadow-md transition flex flex-col justify-between gap-3 bg-white';
+        item.innerHTML = `
+          <div class="flex items-center gap-3.5">
+            <img src="${c.thumbnailUrl || ''}" alt="경쟁숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
+                <span class="font-bold text-rose-600">거리 ${c.distanceM}m</span>
+                <span>·</span>
+                <span class="font-semibold text-slate-700">★ ${c.rating}</span>
+                ${c.hasDiscount ? '<span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">할인중</span>' : ''}
+              </div>
+              <div class="font-bold text-sm text-slate-900 truncate">${c.name}</div>
+              <div class="text-xs text-slate-500 truncate mt-0.5">${c.specs}</div>
+              <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                <div>
+                  ${c.originalPerNightPrice ? `<span class="text-xs text-slate-400 line-through mr-1">${formatKRW(c.originalPerNightPrice)}</span>` : ''}
+                  <span class="font-black text-base text-slate-900">${formatKRW(c.perNightPrice)}</span>
+                  <span class="text-xs text-slate-500">/박</span>
+                </div>
+                ${diffBadge}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+            <button
+              onclick="openCompDetailModal('${c.listingId}')"
+              class="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-bold text-xs transition"
+            >
+              🔍 날짜별 판매가 & 내 집과 1:1 비교표
+            </button>
+            <a href="${c.url}" target="_blank" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+              에어비앤비 ↗
+            </a>
+          </div>
+        `;
+        compGrid.appendChild(item);
+      });
+
+      // 6. 시뮬레이터 표 업데이트
+      updateSimulatorTable();
+    }
+
+    function updateSimulatorTable() {
+      if (!currentAnalysisData) return;
+      const floorPrice = parseInt(document.getElementById('minFloorSlider').value, 10);
+      document.getElementById('minFloorValueLabel').textContent = formatKRW(floorPrice);
+      document.getElementById('modalFloorPrice').textContent = `${formatKRW(floorPrice)} / 박`;
+
+      const tbody = document.getElementById('simulatorTableBody');
+      tbody.innerHTML = '';
+
+      currentAnalysisData.windows.forEach(w => {
+        const curPrice = (w.pricing && w.pricing.perNightPrice) ? w.pricing.perNightPrice : currentAnalysisData.summary.avgOpenPerNightPrice;
+        const origPrice = (w.pricing && w.pricing.originalPerNightPrice) ? w.pricing.originalPerNightPrice : null;
+        const hasBadge = w.pricing && w.pricing.hasDiscountBadge;
+
+        // 1) 만약 현재 요금이 이미 호스트가 설정한 최저 방어선(floorPrice)보다 낮거나 같다면?
+        // -> 절대 요금을 올리지 않고(역전 방지!), 현재 요금에서 5%만 살짝 낮추거나 그대로 유지하면서 '취소선 배지'만 달아줌
+        let finalTarget;
+        if (curPrice <= floorPrice) {
+          finalTarget = Math.round((curPrice * 0.92) / 1000) * 1000;
+        } else {
+          const rawDiscounted = Math.round((curPrice * (hasBadge ? 0.88 : 0.82)) / 1000) * 1000;
+          finalTarget = Math.max(floorPrice, Math.min(curPrice - 5000, rawDiscounted));
+        }
+
+        // 취소선은 무조건 '현재 내 요금(curPrice)'에 긋고, 오른쪽에는 항상 더 저렴한 'finalTarget'이 나오게 통일!
+        const savedAmount = curPrice - finalTarget;
+        const discPct = Math.round((savedAmount / curPrice) * 100);
+
+        const actions = [];
+        if (!hasBadge) actions.push(`맞춤 프로모션 -${discPct}% 취소선 배지 생성`);
+        else actions.push(`주변 1km 시세 맞춤 ${formatKRW(savedAmount)} 추가 인하`);
+        if (w.minNights >= 2) actions.push(`최소 ${w.minNights}박 → 1박으로 풀기`);
+        else actions.push('평일 2인 특가 노출');
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="py-3.5 px-3 font-extrabold text-slate-900 whitespace-nowrap">
+            ${w.startDate.slice(5)} ~ ${w.endDate.slice(5)}
+            <span class="ml-1 text-xs font-normal text-slate-500">(${w.nights}박)</span>
+          </td>
+          <td class="py-3.5 px-3 text-slate-600 whitespace-nowrap">
+            <span class="font-bold">${formatKRW(curPrice)}</span>/박
+            <span class="ml-1 text-xs ${hasBadge ? 'text-slate-400' : 'text-rose-500 font-semibold'}">(${hasBadge ? `최소 ${w.minNights}박` : '할인배지 없음'})</span>
+          </td>
+          <td class="py-3.5 px-3 whitespace-nowrap">
+            <span class="text-xs text-slate-400 line-through mr-1">${formatKRW(curPrice)}</span>
+            <span class="font-black text-rose-600 text-base">${formatKRW(finalTarget)}</span>
+            <span class="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded font-extrabold ml-1">-${formatKRW(savedAmount)} 인하</span>
+          </td>
+          <td class="py-3.5 px-3 text-xs font-bold text-slate-700">
+            ${actions.map(a => `<span class="inline-block px-2.5 py-1 rounded-lg bg-slate-100 mr-1 mb-1">✨ ${a}</span>`).join('')}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function openCompDetailModal(compId) {
+      if (!currentAnalysisData) return;
+      const myId = currentAnalysisData.meta.listingId;
+      const year = currentAnalysisData.targetYear;
+      const month = currentAnalysisData.targetMonth;
+
+      document.getElementById('compDetailModal').classList.remove('hidden');
+      document.getElementById('compModalLoading').classList.remove('hidden');
+      document.getElementById('compModalBody').classList.add('hidden');
+
+      try {
+        let json = null;
+        try {
+          const res = await fetch(`/api/competitor-detail?my_id=${encodeURIComponent(myId)}&comp_id=${encodeURIComponent(compId)}&year=${year}&month=${month}`);
+          if (res.ok) {
+            json = await res.json();
+          }
+        } catch (apiErr) {
+          // Fallback to static snapshot on GitHub Pages
+        }
+
+        if (!json || !json.ok) {
+          const snapRes = await fetch(`./data/comp_${compId}_${year}_${month}.json`);
+          if (snapRes.ok) {
+            json = await snapRes.json();
+          } else {
+            const fbRes = await fetch(`./data/comp_${compId}_2026_11.json`);
+            if (fbRes.ok) json = await fbRes.json();
+          }
+        }
+
+        if (!json || !json.ok) {
+          alert('에어비앤비 실시간 요청 제한으로 잠시 후 다시 시도해주세요.');
+          closeCompDetailModal();
+          return;
+        }
+        renderCompDetailModal(json.data);
+      } catch (err) {
+        alert('상세 비교 조회 오류: ' + err.message);
+        closeCompDetailModal();
+      }
+    }
+
+    function closeCompDetailModal() {
+      document.getElementById('compDetailModal').classList.add('hidden');
+    }
+
+    function renderCompDetailModal(detail) {
+      document.getElementById('compModalLoading').classList.add('hidden');
+      document.getElementById('compModalBody').classList.remove('hidden');
+
+      const { myMeta, compMeta, summary, compOpenWindows, dailyComparison, targetMonth } = detail;
+      document.getElementById('compModalTitle').textContent = `[${compMeta.title}] vs 내 숙소 1:1 가격·최소박수 비교`;
+
+      document.getElementById('compModalMyStats').textContent = `${targetMonth}월 예약률 ${summary.myOccupancyRate}% (${summary.myBookedDays}박 예약 / ${summary.myOpenDays}박 공실)`;
+      document.getElementById('compModalMyPrice').textContent = `내 평균 판매가: ${formatKRW(summary.myAvgPrice2p)}/박 (1~5인 단일가)`;
+
+      document.getElementById('compModalTargetStats').textContent = `${targetMonth}월 예약률 ${summary.compOccupancyRate}% (${summary.compBookedDays}박 예약 / ${summary.compOpenDays}박 공실)`;
+      const compP2 = summary.compAvgPrice2p;
+      const compP4 = summary.compAvgPrice4p;
+      document.getElementById('compModalTargetPrice').textContent = compP2
+        ? `평일 2인 평균: ${formatKRW(compP2)}/박 | 4인: ${formatKRW(compP4)}/박 ${summary.extraGuestFee > 0 ? `(1인 추가 +${formatKRW(summary.extraGuestFee)})` : '(추가비 없음)'}`
+        : '현재 단기 공실 구간 없음 (완판 또는 3박 이상 장기 전용)';
+
+      if (compP2) {
+        const diff = compP2 - summary.myAvgPrice2p;
+        if (diff < 0) {
+          document.getElementById('compModalDiffHeadline').textContent = `이 집이 내 숙소보다 1박당 ${formatKRW(Math.abs(diff))} 더 저렴합니다!`;
+          document.getElementById('compModalDiffSub').textContent = summary.extraGuestFee > 0
+            ? `2인 기본가를 낮춰 평일 커플 수요를 흡수하고, 3~4인일 때만 1인당 +${formatKRW(summary.extraGuestFee)}을 추가로 받고 있습니다.`
+            : `기본 1박 요금을 내 숙소보다 낮게 책정하여 먼저 예약을 채웠습니다.`;
+        } else {
+          document.getElementById('compModalDiffHeadline').textContent = `이 집은 내 숙소보다 1박당 +${formatKRW(diff)} 더 비쌉니다`;
+          document.getElementById('compModalDiffSub').textContent = `내 숙소가 가격 경쟁력이 더 높으므로, 최소박수 완화 및 할인 배지만 추가하면 내가 먼저 예약을 가져올 수 있습니다.`;
+        }
+      } else {
+        document.getElementById('compModalDiffHeadline').textContent = `${targetMonth}월 예약률 ${summary.compOccupancyRate}% 기록 중`;
+        document.getElementById('compModalDiffSub').textContent = `아래 날짜별 표에서 이 집의 요일별 최소 박수 설정을 확인하세요.`;
+      }
+
+      // 1) 구간별 테이블
+      const winBody = document.getElementById('compModalWindowsBody');
+      winBody.innerHTML = '';
+      if (compOpenWindows.length === 0) {
+        winBody.innerHTML = `<tr><td colspan="6" class="py-4 px-3 text-center text-slate-500 font-semibold">현재 남아있는 빈 날짜 구간이 없습니다 (100% 예약 완료)</td></tr>`;
+      } else {
+        compOpenWindows.forEach(w => {
+          const p2 = w.price2p;
+          const p4 = w.price4p;
+          const myP = summary.myAvgPrice2p;
+          const diff = p2 ? (p2 - myP) : null;
+          const diffHtml = diff === null
+            ? `<span class="text-slate-400">최소 ${w.minNights}박 미만 잠김</span>`
+            : diff < 0
+            ? `<span class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-black">내 집보다 ${formatKRW(Math.abs(diff))} 저렴 (-${Math.round(Math.abs(diff)/myP*100)}%)</span>`
+            : `<span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold">내 집보다 +${formatKRW(diff)} 비쌈</span>`;
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50';
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 font-extrabold text-slate-900 whitespace-nowrap">${w.startDate.slice(5)} ~ ${w.endDate.slice(5)} (${w.nights}박)</td>
+            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-800 font-bold">최소 ${w.minNights}박</span></td>
+            <td class="py-2.5 px-3 font-black text-slate-900">${p2 ? formatKRW(p2) + '/박' : '예약불가(박수부족)'}</td>
+            <td class="py-2.5 px-3 font-semibold text-slate-700">${p4 ? formatKRW(p4) + '/박' : '-'}</td>
+            <td class="py-2.5 px-3 text-slate-500 font-semibold">${formatKRW(myP)}/박</td>
+            <td class="py-2.5 px-3 whitespace-nowrap">${diffHtml}</td>
+          `;
+          winBody.appendChild(tr);
+        });
+      }
+
+      // 2) 1일~말일 일자별 대조표
+      const dailyBody = document.getElementById('compModalDailyBody');
+      dailyBody.innerHTML = '';
+      dailyComparison.forEach(d => {
+        const isMyOpen = d.myAvailable;
+        const isCompOpen = d.compAvailable;
+        const rowBg = isMyOpen ? 'bg-rose-50/60' : '';
+
+        const myStatusHtml = isMyOpen
+          ? `<span class="px-2 py-0.5 rounded bg-rose-500 text-white font-extrabold">내 빈날 (최소 ${d.myMinNights}박)</span>`
+          : `<span class="text-slate-400">예약완료 (최소 ${d.myMinNights}박)</span>`;
+
+        const compStatusHtml = isCompOpen
+          ? `<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 font-extrabold">빈날 (최소 ${d.compMinNights}박)</span>`
+          : `<span class="text-slate-500 font-semibold">예약완료 (최소 ${d.compMinNights}박 설정됨)</span>`;
+
+        const myPriceHtml = d.myPrice2p ? `<strong class="text-slate-900">${formatKRW(d.myPrice2p)}</strong>` : '<span class="text-slate-400">-</span>';
+        const compPriceHtml = d.compPrice2p
+          ? `<strong class="text-slate-900">${formatKRW(d.compPrice2p)}</strong> ${d.compPrice4p && d.compPrice4p !== d.compPrice2p ? `<span class="text-slate-500">(4인 ${formatKRW(d.compPrice4p)})</span>` : ''}`
+          : '<span class="text-slate-400">판매완료</span>';
+
+        let diffCell = '<span class="text-slate-400">-</span>';
+        if (d.priceDiff2p !== null) {
+          if (d.priceDiff2p < 0) {
+            diffCell = `<span class="font-black text-emerald-700">경쟁사가 ${formatKRW(Math.abs(d.priceDiff2p))} 더 쌈</span>`;
+          } else if (d.priceDiff2p > 0) {
+            diffCell = `<span class="font-bold text-slate-600">경쟁사가 +${formatKRW(d.priceDiff2p)} 더 비쌈</span>`;
+          } else {
+            diffCell = `<span class="text-slate-500">동일</span>`;
+          }
+        } else if (isMyOpen && !isCompOpen) {
+          diffCell = `<span class="text-rose-600 font-bold">나는 공실 / 이 집은 판매완료!</span>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = `${rowBg} hover:bg-slate-100/70`;
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-bold ${d.isWeekend ? 'text-rose-600' : 'text-slate-800'} whitespace-nowrap">${d.date.slice(5)} (${d.weekday})</td>
+          <td class="py-2 px-3 whitespace-nowrap">${myStatusHtml}</td>
+          <td class="py-2 px-3 whitespace-nowrap">${myPriceHtml}</td>
+          <td class="py-2 px-3 whitespace-nowrap">${compStatusHtml}</td>
+          <td class="py-2 px-3 whitespace-nowrap">${compPriceHtml}</td>
+          <td class="py-2 px-3 whitespace-nowrap">${diffCell}</td>
+        `;
+        dailyBody.appendChild(tr);
+      });
+    }
+
+    function openSubscribeModal() {
+      document.getElementById('subscribeModal').classList.remove('hidden');
+      document.getElementById('modalStep1').classList.remove('hidden');
+      document.getElementById('modalStep2').classList.add('hidden');
+      renderExtraSlots();
+    }
+
+    function closeSubscribeModal() {
+      document.getElementById('subscribeModal').classList.add('hidden');
+    }
+
+    function addExtraListingSlot() {
+      extraSlots.push('');
+      renderExtraSlots();
+    }
+
+    function removeExtraSlot(idx) {
+      extraSlots.splice(idx, 1);
+      renderExtraSlots();
+    }
+
+    function renderExtraSlots() {
+      const box = document.getElementById('extraListingsBox');
+      box.innerHTML = '';
+      extraSlots.forEach((val, idx) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center gap-2';
+        div.innerHTML = `
+          <input
+            type="text"
+            placeholder="추가할 숙소 #${idx + 2} 에어비앤비 링크 입력"
+            value="${val}"
+            oninput="extraSlots[${idx}] = this.value"
+            class="flex-1 px-3 py-2.5 rounded-xl bg-white border border-slate-300 text-xs text-slate-900 focus:outline-none focus:border-rose-500"
+          />
+          <button onclick="removeExtraSlot(${idx})" class="px-2.5 py-2 rounded-lg bg-slate-100 text-slate-500 hover:text-slate-900 text-xs font-bold">삭제</button>
+        `;
+        box.appendChild(div);
+      });
+      const totalSlots = 1 + extraSlots.length;
+      document.getElementById('modalSlotCount').textContent = `${totalSlots}개 숙소`;
+      document.getElementById('modalFinalPrice').textContent = `월 ${formatKRW(totalSlots * 1900)}`;
+    }
+
+    function goToModalStep2() {
+      document.getElementById('modalStep1').classList.add('hidden');
+      document.getElementById('modalStep2').classList.remove('hidden');
+    }
+
+    let botPollTimer = null;
+
+    async function triggerLocalBot(mode) {
+      if (!currentAnalysisData) {
+        alert('먼저 숙소 무료 진단을 실행해주세요.');
+        return;
+      }
+      const floorPrice = parseInt(document.getElementById('minFloorSlider').value, 10);
+      const listingId = currentAnalysisData.meta.listingId;
+
+      const windowsPayload = currentAnalysisData.windows.map(w => {
+        const curPrice = (w.pricing && w.pricing.perNightPrice) ? w.pricing.perNightPrice : currentAnalysisData.summary.avgOpenPerNightPrice;
+        const hasBadge = w.pricing && w.pricing.hasDiscountBadge;
+        const rawTarget = Math.round((curPrice * (hasBadge ? 0.88 : 0.80)) / 1000) * 1000;
+        const finalTarget = Math.max(floorPrice, rawTarget);
+        return {
+          startDate: w.startDate,
+          endDate: w.endDate,
+          nights: w.nights,
+          dates: w.dates || [w.startDate],
+          currentPrice: curPrice,
+          targetPrice: finalTarget,
+          minNights: w.minNights
+        };
+      });
+
+      document.getElementById('botStatusBox').classList.remove('hidden');
+      document.getElementById('botStateBadge').textContent = 'STARTING';
+      document.getElementById('botStatusMessage').textContent = '내 컴퓨터에서 전용 크롬 자동화 창을 띄우고 있습니다...';
+
+      try {
+        const res = await fetch('/api/run-bot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            listingId,
+            mode: mode || 'APPLY_SETTINGS',
+            windows: windowsPayload
+          })
+        });
+        const json = await res.json();
+        if (!json.ok) {
+          throw new Error(json.error || '봇 실행 실패');
+        }
+        if (botPollTimer) clearInterval(botPollTimer);
+        botPollTimer = setInterval(pollBotStatus, 1500);
+      } catch (err) {
+        document.getElementById('botStateBadge').textContent = 'ERROR';
+        document.getElementById('botStatusMessage').textContent = '오류: ' + err.message;
+      }
+    }
+
+    async function pollBotStatus() {
+      try {
+        const res = await fetch('/api/bot-status');
+        const json = await res.json();
+        if (json.ok && json.status) {
+          const st = json.status;
+          document.getElementById('botStateBadge').textContent = st.state || 'RUNNING';
+          document.getElementById('botStatusMessage').textContent = st.message || '';
+          if (st.updatedAt) {
+            document.getElementById('botUpdatedTime').textContent = new Date(st.updatedAt).toLocaleTimeString('ko-KR');
+          }
+          if (st.state === 'COMPLETED' || st.state === 'ERROR') {
+            clearInterval(botPollTimer);
+          }
+        }
+      } catch (e) {}
+    }
+
+    function copyBotEmail() {
+      navigator.clipboard.writeText('manager01@airauto.kr');
+      const btn = document.getElementById('copyBotBtn');
+      btn.textContent = '복사 완료!';
+      setTimeout(() => { btn.textContent = '이메일 복사'; }, 2000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      runAnalysis();
+    });
+  </script>
+</body>
+</html>

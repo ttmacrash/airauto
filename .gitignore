@@ -1,0 +1,4 @@
+node_modules/
+chrome_bot_profile/
+__pycache__/
+.DS_Store
