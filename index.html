@@ -73,6 +73,13 @@
 
       <div class="hidden sm:flex items-center gap-2">
         <button
+          id="adminManageBtn"
+          onclick="openAdminModal()"
+          class="hidden px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm transition shadow-sm"
+        >
+          🛠️ 어드민: 회원 ID/PW 발급·관리
+        </button>
+        <button
           id="desktopAuthBtn"
           onclick="openAuthModal('login')"
           class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm transition"
@@ -80,24 +87,24 @@
           🔐 PRO 로그인
         </button>
         <button onclick="openSubscribeModal()" class="airbnb-btn px-3.5 py-2 rounded-xl text-white font-bold text-xs sm:text-sm shadow-sm">
-          월 1,900원 구독
+          월 1,900원 구독 신청
         </button>
       </div>
     </div>
 
-    <!-- 무료 vs PRO 과금 기준 안내 및 1클릭 테스트 전환 바 -->
+    <!-- 무료 vs PRO 과금 기준 안내 바 (어드민 로그인 시에만 어드민 관리 버튼 표시, 일반 방문자에게는 ID/PW 비노출) -->
     <div id="membershipSubBar" class="bg-slate-900 text-white px-4 py-2 text-xs">
       <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div id="membershipStatusText" class="text-slate-200">
-          💡 <strong class="text-amber-300">[비로그인 무료 기준]</strong> 최초 1회 공실 조회 & 주변 숙소 상위 2곳만 공개됩니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 타겟 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 해제)
+          💡 <strong class="text-amber-300">[무료 체험 안내]</strong> 비로그인 방문자는 최초 1회 공실 조회 및 주변 숙소 상위 2곳만 열람 가능합니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 TOP 10은 <strong class="text-white">월 1,900원 PRO 회원 로그인</strong> 후 이용 가능)
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
           <button
-            id="quickToggleProBtn"
-            onclick="quickToggleProDemo()"
-            class="px-3 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition"
+            id="subBarActionBtn"
+            onclick="openAuthModal('login')"
+            class="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition"
           >
-            ⚡ 1클릭 테스트: PRO 과금 회원 화면으로 전환 (host/1900)
+            🔐 발급받은 PRO 계정으로 로그인 →
           </button>
         </div>
       </div>
@@ -645,7 +652,7 @@
     </div>
   </div>
 
-  <!-- 🔐 PRO 회원 로그인 & 월 1,900원 과금 인증 모달 -->
+  <!-- 🔐 PRO 회원 로그인 & 월 1,900원 구독 안내 모달 (아이디/비번 절대 노출 없음) -->
   <div id="authModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative">
       <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
@@ -654,40 +661,31 @@
       <div id="authPaywallReasonBox" class="hidden mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-bold leading-relaxed">
       </div>
 
-      <!-- 상단 탭: 로그인 vs 신규 월 1,900원 가입 -->
+      <!-- 상단 탭: PRO 로그인 vs 구독 및 계정 발급 신청 -->
       <div class="flex bg-slate-100 p-1 rounded-xl mb-5 border border-slate-200">
         <button id="authTabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-xs font-extrabold bg-white text-slate-900 shadow-sm">
-          🔐 PRO 회원 로그인 (ID/PW)
+          🔐 PRO 회원 로그인
         </button>
         <button id="authTabRegBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-xs font-extrabold text-slate-500 hover:text-slate-900">
-          ✨ 월 1,900원 결제 & 계정 발급
+          💳 월 1,900원 계정 발급 안내
         </button>
       </div>
 
       <!-- 로그인 폼 -->
       <div id="authLoginForm" class="space-y-4">
         <div>
-          <h3 class="text-lg font-black text-slate-900">과금 회원(PRO) 인증 로그인</h3>
-          <p class="text-xs text-slate-500 mt-0.5">로그인 즉시 무제한 숙소 조회 · 30일 1:1 비교표 · 벤치마킹 TOP 10 잠금이 해제됩니다.</p>
-        </div>
-
-        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-2">
-          <div class="text-xs text-amber-900">
-            <strong>💡 호스트님 테스트 계정:</strong> ID <code class="font-black">host</code> / PW <code class="font-black">1900</code>
-          </div>
-          <button onclick="fillDemoLogin()" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-[11px] flex-shrink-0">
-            1클릭 자동입력
-          </button>
+          <h3 class="text-lg font-black text-slate-900">PRO 과금 회원 인증 로그인</h3>
+          <p class="text-xs text-slate-500 mt-0.5">관리자에게 발급받은 전용 아이디와 비밀번호를 입력해 주세요.</p>
         </div>
 
         <div class="space-y-2.5">
           <div>
             <label class="block text-xs font-extrabold text-slate-700 mb-1">아이디 (ID)</label>
-            <input id="loginUsernameInput" type="text" placeholder="아이디 입력 (예: host)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+            <input id="loginUsernameInput" type="text" placeholder="발급받은 아이디 입력" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
           </div>
           <div>
             <label class="block text-xs font-extrabold text-slate-700 mb-1">비밀번호 (Password)</label>
-            <input id="loginPasswordInput" type="password" placeholder="비밀번호 입력 (예: 1900)" onkeydown="if(event.key==='Enter') submitLogin()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+            <input id="loginPasswordInput" type="password" placeholder="발급받은 비밀번호 입력" onkeydown="if(event.key==='Enter') submitLogin()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
           </div>
         </div>
 
@@ -707,33 +705,92 @@
         </div>
       </div>
 
-      <!-- 신규 과금 계정 발급 폼 -->
+      <!-- 구독 및 계정 발급 신청 안내 탭 (무료 사용자가 임의로 가입하지 못하도록 차단) -->
       <div id="authRegisterForm" class="hidden space-y-4">
         <div>
-          <h3 class="text-lg font-black text-slate-900">월 1,900원 구독 & 전용 ID/PW 즉시 발급</h3>
-          <p class="text-xs text-slate-500 mt-0.5">숙소 1개당 커피 한 잔 값도 안 되는 월 1,900원으로 무제한 경쟁사 분석과 자동 세팅을 이용하세요.</p>
+          <h3 class="text-lg font-black text-slate-900">월 1,900원 구독 및 전용 ID/PW 발급 절차</h3>
+          <p class="text-xs text-slate-500 mt-0.5">무분별한 어뷰징 방지를 위해 결제 확인 후 관리자가 전용 ID/PW를 직접 발급해 드립니다.</p>
         </div>
 
-        <div class="space-y-2.5">
-          <div>
-            <label class="block text-xs font-extrabold text-slate-700 mb-1">호스트 닉네임 / 숙소명</label>
-            <input id="regNameInput" type="text" placeholder="예: 미쉘 (HOUSE-TORY)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-extrabold text-slate-700 mb-1">사용할 아이디 (ID)</label>
-            <input id="regUsernameInput" type="text" placeholder="영문/숫자 아이디 입력" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
-          </div>
-          <div>
-            <label class="block text-xs font-extrabold text-slate-700 mb-1">사용할 비밀번호 (Password)</label>
-            <input id="regPasswordInput" type="password" placeholder="비밀번호 입력" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
-          </div>
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs text-slate-700 leading-relaxed">
+          <div class="font-extrabold text-slate-900 text-sm">✅ 전용 계정 발급 3단계</div>
+          <p><strong>1단계:</strong> 아래 <strong>[월 1,900원 구독 신청하기]</strong>에서 운영 중인 에어비앤비 숙소 수를 선택해 구독을 신청합니다.</p>
+          <p><strong>2단계:</strong> 관리자가 결제 확인 즉시 <strong>호스트님 전용 PRO 아이디와 비밀번호</strong>를 생성하여 안내해 드립니다.</p>
+          <p><strong>3단계:</strong> 발급받은 ID/PW로 로그인하시면 <strong>무제한 숙소 조회, 1:1 30일 전수 비교표, 9단계 벤치마킹 타겟 TOP 10</strong>이 즉시 해제됩니다.</p>
         </div>
 
-        <div id="regErrorMsg" class="hidden text-xs font-bold text-rose-600"></div>
-
-        <button onclick="submitRegister()" class="w-full py-3.5 rounded-xl airbnb-btn font-black text-white text-sm shadow-md">
-          월 ₩1,900 구독 시작 & 즉시 로그인 →
+        <button onclick="closeAuthModal(); openSubscribeModal();" class="w-full py-3.5 rounded-xl airbnb-btn font-black text-white text-sm shadow-md">
+          월 ₩1,900 구독 신청창 열기 →
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🛠️ 어드민(Admin) 전용: 과금 회원 ID/PW 발급 및 계정 관리 모달 -->
+  <div id="adminModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 my-auto max-h-[92vh] flex flex-col">
+      <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-xs font-black">🛠️ MASTER ADMIN 전용</span>
+          <h3 class="text-lg sm:text-xl font-black text-slate-900 mt-1">과금 회원(PRO) 아이디·비밀번호 발급 및 관리</h3>
+          <p class="text-xs text-slate-500 mt-0.5">결제가 완료된 고객에게 발급할 전용 ID/PW를 생성하고, 만료된 계정을 일시정지하거나 삭제합니다.</p>
+        </div>
+        <button onclick="closeAdminModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex-shrink-0">✕</button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 space-y-6 py-5 pr-1">
+        <!-- 1. 신규 회원 ID/PW 발급 폼 -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
+          <div class="font-extrabold text-sm text-slate-900">➕ 신규 과금 회원 ID / PW 발급하기</div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">발급할 아이디 (ID)</label>
+              <input id="adminNewUid" type="text" placeholder="예: host01" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm font-bold focus:outline-none focus:border-rose-500" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">발급할 비밀번호 (PW)</label>
+              <div class="flex gap-1.5">
+                <input id="adminNewUpw" type="text" placeholder="비밀번호 입력" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm font-bold focus:outline-none focus:border-rose-500" />
+                <button onclick="generateRandomPassword()" class="px-2.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold text-xs whitespace-nowrap" title="랜덤 비밀번호 생성">
+                  🎲 자동생성
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">고객명 / 숙소 수 메모</label>
+              <input id="adminNewName" type="text" placeholder="예: 김호스트 (2개 숙소)" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm focus:outline-none focus:border-rose-500" />
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <span id="adminCreateMsg" class="text-xs font-bold text-emerald-600"></span>
+            <button onclick="adminCreateUser()" class="px-5 py-2.5 rounded-xl airbnb-btn text-white font-black text-xs sm:text-sm shadow">
+              ➕ 이 계정 발급 및 저장하기
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. 현재 발급된 회원 목록 -->
+        <div>
+          <div class="flex items-center justify-between mb-2.5">
+            <h4 class="font-extrabold text-sm text-slate-900">📋 발급된 PRO 과금 회원 목록</h4>
+            <span class="text-xs text-slate-500">우측 <strong>[카톡 안내문 복사]</strong>를 눌러 고객에게 바로 전달하세요</span>
+          </div>
+          <div class="overflow-x-auto rounded-2xl border border-slate-200">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                  <th class="py-2.5 px-3 font-bold">아이디 (ID)</th>
+                  <th class="py-2.5 px-3 font-bold">비밀번호 (PW)</th>
+                  <th class="py-2.5 px-3 font-bold">고객명 / 메모</th>
+                  <th class="py-2.5 px-3 font-bold">상태</th>
+                  <th class="py-2.5 px-3 font-bold text-right">관리 / 카톡 전달</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody" class="divide-y divide-slate-100">
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -744,9 +801,12 @@
     let extraSlots = [];
     let pendingCompDetailId = null;
 
-    // ==================== 과금(PRO) / 비과금(Free) & 1회 무료 조회 상태 관리 ====================
+    // ==================== 과금(PRO) / 비과금(Free) & 어드민 발급 계정 관리 ====================
     let currentUser = null;
     let freeQueryUsedCount = 0;
+
+    // 어드민 마스터 비밀번호 해시 (SHA-256) - 소스코드를 보더라도 평문 비밀번호 절대 노출 불가
+    const ADMIN_PW_SHA256 = 'c1bc243f9158c07fd6ce92125b985c0cdeac7511a905e423c89511ac05b18082';
 
     try {
       const savedUser = localStorage.getItem('airauto_user');
@@ -758,17 +818,28 @@
       return Boolean(currentUser && currentUser.isPro);
     }
 
+    function isAdminUser() {
+      return Boolean(currentUser && currentUser.isAdmin);
+    }
+
+    async function sha256Hex(str) {
+      const buf = new TextEncoder().encode(str);
+      const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+      return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     function updateAuthHeaderUI() {
       const badge = document.getElementById('headerPlanBadge');
       const mBtn = document.getElementById('mobileAuthBtn');
       const dBtn = document.getElementById('desktopAuthBtn');
+      const adminBtn = document.getElementById('adminManageBtn');
       const subBar = document.getElementById('membershipSubBar');
       const statusText = document.getElementById('membershipStatusText');
-      const quickBtn = document.getElementById('quickToggleProBtn');
+      const subActionBtn = document.getElementById('subBarActionBtn');
 
       if (isProUser()) {
         badge.className = 'ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300';
-        badge.textContent = `👑 PRO 무제한 (${currentUser.username})`;
+        badge.textContent = isAdminUser() ? `🛠️ MASTER ADMIN (${currentUser.username})` : `👑 PRO 회원 (${currentUser.username})`;
         if (mBtn) {
           mBtn.textContent = '로그아웃';
           mBtn.onclick = logoutProUser;
@@ -778,10 +849,25 @@
           dBtn.className = 'px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm transition';
           dBtn.onclick = logoutProUser;
         }
+        if (adminBtn) {
+          if (isAdminUser()) adminBtn.classList.remove('hidden');
+          else adminBtn.classList.add('hidden');
+        }
         subBar.className = 'bg-emerald-950 text-white px-4 py-2 text-xs';
-        statusText.innerHTML = `✅ <strong class="text-emerald-300">[PRO 과금 회원 인증 완료]</strong> 무제한 숙소 조회 · 초근접 옆집 10곳 전수 시세 · 1:1 30일 판매가 비교표 · 벤치마킹 TOP 10이 모두 잠금 해제되었습니다.`;
-        quickBtn.className = 'px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition';
-        quickBtn.textContent = '🔄 무료(비로그인) 화면으로 전환해 비교해보기';
+        statusText.innerHTML = isAdminUser()
+          ? `🛠️ <strong class="text-amber-300">[총괄 어드민 모드]</strong> 모든 PRO 기능이 해제되었으며, 우측 버튼에서 과금 고객용 ID/PW를 직접 발급·정지·삭제할 수 있습니다.`
+          : `✅ <strong class="text-emerald-300">[PRO 과금 회원 인증 완료]</strong> 무제한 숙소 조회 · 초근접 옆집 10곳 전수 시세 · 1:1 30일 판매가 비교표 · 벤치마킹 TOP 10이 모두 잠금 해제되었습니다.`;
+        if (subActionBtn) {
+          if (isAdminUser()) {
+            subActionBtn.className = 'px-3 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition';
+            subActionBtn.textContent = '🛠️ 고객 ID/PW 발급·관리 대시보드 열기';
+            subActionBtn.onclick = openAdminModal;
+          } else {
+            subActionBtn.className = 'px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition';
+            subActionBtn.textContent = '로그아웃';
+            subActionBtn.onclick = logoutProUser;
+          }
+        }
       } else {
         const remain = Math.max(0, 1 - freeQueryUsedCount);
         badge.className = 'ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300';
@@ -795,10 +881,14 @@
           dBtn.className = 'px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm transition';
           dBtn.onclick = () => openAuthModal('login');
         }
+        if (adminBtn) adminBtn.classList.add('hidden');
         subBar.className = 'bg-slate-900 text-white px-4 py-2 text-xs';
-        statusText.innerHTML = `💡 <strong class="text-amber-300">[비로그인 무료 기준]</strong> 최초 1회 공실 조회 & 주변 숙소 상위 2곳만 공개됩니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 타겟 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 해제)`;
-        quickBtn.className = 'px-3 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition';
-        quickBtn.textContent = '⚡ 1클릭 테스트: PRO 과금 회원 화면으로 전환 (host/1900)';
+        statusText.innerHTML = `💡 <strong class="text-amber-300">[무료 체험 안내]</strong> 비로그인 방문자는 최초 1회 공실 조회 및 주변 숙소 상위 2곳만 열람 가능합니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 해제)`;
+        if (subActionBtn) {
+          subActionBtn.className = 'px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition';
+          subActionBtn.textContent = '🔐 발급받은 PRO 계정으로 로그인 →';
+          subActionBtn.onclick = () => openAuthModal('login');
+        }
       }
     }
 
@@ -817,7 +907,6 @@
     function closeAuthModal() {
       document.getElementById('authModal').classList.add('hidden');
       document.getElementById('loginErrorMsg').classList.add('hidden');
-      document.getElementById('regErrorMsg').classList.add('hidden');
     }
 
     function switchAuthTab(mode) {
@@ -838,18 +927,20 @@
       }
     }
 
-    function fillDemoLogin() {
-      document.getElementById('loginUsernameInput').value = 'host';
-      document.getElementById('loginPasswordInput').value = '1900';
-    }
-
     async function submitLogin() {
       const uid = document.getElementById('loginUsernameInput').value.trim().toLowerCase();
       const upw = document.getElementById('loginPasswordInput').value.trim();
       const errBox = document.getElementById('loginErrorMsg');
       errBox.classList.add('hidden');
 
+      if (!uid || !upw) {
+        errBox.textContent = '아이디와 비밀번호를 모두 입력해 주세요.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
       let authenticatedUser = null;
+      let serverError = null;
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
@@ -858,24 +949,41 @@
         });
         const json = await res.json();
         if (json.ok && json.user) authenticatedUser = json.user;
+        else if (json.error) serverError = json.error;
       } catch (e) {}
 
-      // Fallback for GitHub Pages serverless mode
+      // Fallback for GitHub Pages serverless mode (SHA-256 hash verification for admin + admin-issued users)
       if (!authenticatedUser) {
-        const localUsers = JSON.parse(localStorage.getItem('airauto_custom_users') || '{}');
-        const builtIn = {
-          host: { pw: '1900', name: '미쉘 (HOUSE-TORY 호스트)', plan: 'PRO (월 1,900원 무제한)' },
-          admin: { pw: '1900', name: '관리자 (PRO)', plan: 'PRO (월 1,900원 무제한)' },
-          michelle: { pw: '1900', name: '미쉘 호스트님', plan: 'PRO (월 1,900원 무제한)' }
-        };
-        const merged = { ...builtIn, ...localUsers };
-        if (merged[uid] && merged[uid].pw === upw) {
-          authenticatedUser = { username: uid, name: merged[uid].name, plan: merged[uid].plan, isPro: true };
+        const pwHash = await sha256Hex(upw);
+        if ((uid === 'ttmacrash' || uid === 'admin') && pwHash === ADMIN_PW_SHA256) {
+          authenticatedUser = {
+            username: uid,
+            name: '총괄 어드민 (호스트님)',
+            plan: 'MASTER ADMIN',
+            isPro: true,
+            isAdmin: true
+          };
+        } else {
+          const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
+          if (localUsers[uid] && localUsers[uid].pw === upw) {
+            if (localUsers[uid].active === false) {
+              errBox.textContent = '이용 기간이 만료되었거나 정지된 계정입니다. 관리자에게 문의해 주세요.';
+              errBox.classList.remove('hidden');
+              return;
+            }
+            authenticatedUser = {
+              username: uid,
+              name: localUsers[uid].name || uid,
+              plan: localUsers[uid].plan || 'PRO (월 1,900원 구독)',
+              isPro: true,
+              isAdmin: false
+            };
+          }
         }
       }
 
       if (!authenticatedUser) {
-        errBox.textContent = '아이디 또는 비밀번호가 올바르지 않습니다. (테스트 계정: host / 1900)';
+        errBox.textContent = serverError || '아이디 또는 비밀번호가 일치하지 않습니다. 관리자에게 발급받은 계정을 확인해 주세요.';
         errBox.classList.remove('hidden');
         return;
       }
@@ -893,41 +1001,6 @@
       }
     }
 
-    async function submitRegister() {
-      const name = document.getElementById('regNameInput').value.trim() || 'PRO 호스트';
-      const uid = document.getElementById('regUsernameInput').value.trim().toLowerCase();
-      const upw = document.getElementById('regPasswordInput').value.trim();
-      const errBox = document.getElementById('regErrorMsg');
-      errBox.classList.add('hidden');
-
-      if (!uid || !upw) {
-        errBox.textContent = '사용하실 아이디와 비밀번호를 입력해주세요.';
-        errBox.classList.remove('hidden');
-        return;
-      }
-
-      try {
-        await fetch('/api/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: uid, password: upw, name })
-        });
-      } catch (e) {}
-
-      try {
-        const localUsers = JSON.parse(localStorage.getItem('airauto_custom_users') || '{}');
-        localUsers[uid] = { pw: upw, name, plan: 'PRO (월 1,900원 구독 완료)' };
-        localStorage.setItem('airauto_custom_users', JSON.stringify(localUsers));
-      } catch (e) {}
-
-      currentUser = { username: uid, name, plan: 'PRO (월 1,900원 구독 완료)', isPro: true };
-      try { localStorage.setItem('airauto_user', JSON.stringify(currentUser)); } catch (e) {}
-      closeAuthModal();
-      updateAuthHeaderUI();
-      if (currentAnalysisData) renderAnalysisResult(currentAnalysisData);
-      if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
-    }
-
     function logoutProUser() {
       currentUser = null;
       try { localStorage.removeItem('airauto_user'); } catch (e) {}
@@ -936,16 +1009,160 @@
       if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
     }
 
-    function quickToggleProDemo() {
-      if (isProUser()) {
-        logoutProUser();
-      } else {
-        currentUser = { username: 'host', name: '미쉘 (HOUSE-TORY 호스트)', plan: 'PRO (월 1,900원 무제한)', isPro: true };
-        try { localStorage.setItem('airauto_user', JSON.stringify(currentUser)); } catch (e) {}
-        updateAuthHeaderUI();
-        if (currentAnalysisData) renderAnalysisResult(currentAnalysisData);
-        if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
+    // ==================== 🛠️ 어드민 전용: 회원 ID/PW 발급·관리 함수 ====================
+    function generateRandomPassword() {
+      const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+      let out = 'pro';
+      for (let i = 0; i < 5; i++) {
+        out += chars.charAt(Math.floor(Math.random() * chars.length));
       }
+      document.getElementById('adminNewUpw').value = out;
+    }
+
+    async function openAdminModal() {
+      if (!isAdminUser()) return;
+      document.getElementById('adminModal').classList.remove('hidden');
+      document.getElementById('adminCreateMsg').textContent = '';
+      await loadAdminUsersList();
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+    }
+
+    async function loadAdminUsersList() {
+      let users = [];
+      try {
+        const res = await fetch('/api/admin/users');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.ok && json.users) users = json.users;
+        }
+      } catch (e) {}
+
+      // Merge with localStorage issued users (for GitHub Pages static mode)
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
+        const existingIds = new Set(users.map(u => u.username));
+        Object.entries(localUsers).forEach(([k, v]) => {
+          if (!existingIds.has(k)) {
+            users.push({
+              username: k,
+              password: v.pw,
+              name: v.name || k,
+              plan: v.plan || 'PRO (월 1,900원 구독)',
+              active: v.active !== false,
+              createdAt: v.createdAt || '2026-11-02'
+            });
+          }
+        });
+      } catch (e) {}
+
+      const tbody = document.getElementById('adminUsersTableBody');
+      tbody.innerHTML = '';
+      if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-semibold">아직 발급된 일반 회원이 없습니다. 위 입력창에서 첫 회원 ID/PW를 발급해 보세요!</td></tr>`;
+        return;
+      }
+
+      users.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        const statusBadge = u.active
+          ? `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px]">이용중(활성)</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-bold text-[11px]">일시정지(만료)</span>`;
+        tr.innerHTML = `
+          <td class="py-3 px-3 font-black text-slate-900">${u.username}</td>
+          <td class="py-3 px-3"><code class="px-2 py-0.5 rounded bg-slate-100 text-rose-600 font-bold">${u.password}</code></td>
+          <td class="py-3 px-3 text-slate-700 font-semibold">${u.name}</td>
+          <td class="py-3 px-3">${statusBadge}</td>
+          <td class="py-3 px-3 text-right space-x-1 whitespace-nowrap">
+            <button onclick="copyCustomerInvite('${u.username}', '${u.password}', '${u.name}')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-[11px]">
+              📋 카톡 안내문 복사
+            </button>
+            <button onclick="adminToggleUser('${u.username}')" class="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px]">
+              ${u.active ? '일시정지' : '다시활성화'}
+            </button>
+            <button onclick="adminDeleteUser('${u.username}')" class="px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-[11px]">
+              삭제
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function adminCreateUser() {
+      const uid = document.getElementById('adminNewUid').value.trim().toLowerCase();
+      const upw = document.getElementById('adminNewUpw').value.trim();
+      const name = document.getElementById('adminNewName').value.trim() || uid;
+      const msg = document.getElementById('adminCreateMsg');
+
+      if (!uid || !upw) {
+        alert('발급할 아이디와 비밀번호를 모두 입력해 주세요.');
+        return;
+      }
+
+      try {
+        await fetch('/api/admin/create-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uid, password: upw, name })
+        });
+      } catch (e) {}
+
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
+        localUsers[uid] = { pw: upw, name, plan: 'PRO (월 1,900원 구독)', active: true, createdAt: new Date().toISOString().slice(0, 10) };
+        localStorage.setItem('airauto_issued_users', JSON.stringify(localUsers));
+      } catch (e) {}
+
+      document.getElementById('adminNewUid').value = '';
+      document.getElementById('adminNewUpw').value = '';
+      document.getElementById('adminNewName').value = '';
+      msg.textContent = `✅ [${uid}] 계정이 발급되었습니다!`;
+      await loadAdminUsersList();
+    }
+
+    async function adminToggleUser(uid) {
+      try {
+        await fetch('/api/admin/toggle-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uid })
+        });
+      } catch (e) {}
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
+        if (localUsers[uid]) {
+          localUsers[uid].active = localUsers[uid].active === false ? true : false;
+          localStorage.setItem('airauto_issued_users', JSON.stringify(localUsers));
+        }
+      } catch (e) {}
+      await loadAdminUsersList();
+    }
+
+    async function adminDeleteUser(uid) {
+      if (!confirm(`정말 [${uid}] 회원 계정을 삭제하시겠습니까?`)) return;
+      try {
+        await fetch('/api/admin/delete-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uid })
+        });
+      } catch (e) {}
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
+        delete localUsers[uid];
+        localStorage.setItem('airauto_issued_users', JSON.stringify(localUsers));
+      } catch (e) {}
+      await loadAdminUsersList();
+    }
+
+    function copyCustomerInvite(uid, upw, name) {
+      const text = `[AirAuto 프로 안내]\n${name}님, 월 1,900원 PRO 과금 회원 계정이 발급되었습니다.\n\n• 접속 주소: ${window.location.origin}${window.location.pathname}\n• 로그인 아이디(ID): ${uid}\n• 비밀번호(PW): ${upw}\n\n우측 상단 [🔐 PRO 로그인] 버튼을 눌러 입력하시면 무제한 숙소 조회, 옆집 10곳 시세, 30일 1:1 비교표 및 벤치마킹 TOP 10 잠금이 모두 해제됩니다.`;
+      navigator.clipboard.writeText(text);
+      alert(`고객 전달용 안내문이 복사되었습니다!\n\n${text}`);
     }
 
     function formatKRW(num) {
@@ -968,7 +1185,7 @@
       if (!isProUser() && !isInitialAutoRun && freeQueryUsedCount >= 1) {
         openAuthModal(
           'login',
-          '🔒 <strong>무료 1회 조회를 이미 사용하셨습니다!</strong><br/>다른 숙소 링크나 다른 월(12월·1월)을 무제한으로 조회하시려면 월 1,900원 PRO 계정으로 로그인해 주세요. (테스트 계정: <code>host</code> / <code>1900</code>)'
+          '🔒 <strong>무료 1회 조회를 이미 사용하셨습니다!</strong><br/>다른 숙소 링크나 다른 월(12월·1월)을 무제한으로 조회하시려면 발급받은 PRO 계정으로 로그인해 주세요.'
         );
         return;
       }
@@ -1231,7 +1448,7 @@
               <div class="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center">
                 <span class="px-2.5 py-1 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black mb-1.5">🔒 월 1,900원 PRO 전용 데이터 (옆집 #${idx + 1})</span>
                 <p class="text-white font-extrabold text-xs sm:text-sm mb-2.5">이 옆집의 11월 예약률(${nb.occupancyRate}%)과 2인/4인 요금·최소박수 확인하기</p>
-                <button onclick="openAuthModal('login', '🔒 <strong>초근접 옆집 3~10위 시세 및 최소숙박일수는 PRO 회원 전용입니다.</strong><br/>로그인(테스트 계정: <code>host / 1900</code>) 시 10곳 전체가 즉시 공개됩니다.')" class="px-4 py-2 rounded-xl airbnb-btn text-white font-black text-xs shadow-lg">
+                <button onclick="openAuthModal('login', '🔒 <strong>초근접 옆집 3~10위 시세 및 최소숙박일수는 PRO 회원 전용입니다.</strong><br/>발급받은 PRO 아이디·비밀번호로 로그인 시 10곳 전체가 즉시 공개됩니다.')" class="px-4 py-2 rounded-xl airbnb-btn text-white font-black text-xs shadow-lg">
                   🔐 PRO 로그인으로 잠금 해제 →
                 </button>
               </div>
@@ -1378,7 +1595,7 @@
         pendingCompDetailId = compId;
         openAuthModal(
           'login',
-          '🔒 <strong>1:1 30일 날짜별 판매가 및 최소박수 비교표는 PRO 과금 회원 전용입니다!</strong><br/>로그인(테스트 계정: <code>host</code> / <code>1900</code>) 즉시 방금 선택하신 숙소의 30일 전체 가격 비교표가 열립니다.'
+          '🔒 <strong>1:1 30일 날짜별 판매가 및 최소박수 비교표는 PRO 과금 회원 전용입니다!</strong><br/>발급받은 PRO 계정으로 로그인하시면 방금 선택하신 숙소의 30일 전체 가격 비교표가 즉시 열립니다.'
         );
         return;
       }
@@ -1599,7 +1816,7 @@
       if (!isProUser()) {
         openAuthModal(
           'login',
-          '🔒 <strong>에어비앤비 달력 1클릭 자동 세팅 봇은 월 1,900원 PRO 회원 전용입니다!</strong><br/>PRO 계정으로 로그인(테스트 계정: <code>host</code> / <code>1900</code>) 후 즉시 실행하실 수 있습니다.'
+          '🔒 <strong>에어비앤비 달력 1클릭 자동 세팅 봇은 월 1,900원 PRO 회원 전용입니다!</strong><br/>발급받은 PRO 계정으로 로그인 후 즉시 실행하실 수 있습니다.'
         );
         return;
       }
@@ -1843,8 +2060,8 @@
             <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center">
               <span class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black mb-2">🔒 월 순수익 200 핵심 먹잇감 타겟 #${idx + 1} (후기 ${t.ratingCount}개 · ★${t.ratingAverage})</span>
               <h5 class="text-white font-black text-sm sm:text-base mb-1">이 숙소의 사진 약점 · 어메니티 빈틈 · -₩5,000 언더컷 순수익(${formatKRW(t.estimatedMonthlyNetProfit)})은 PRO 전용입니다</h5>
-              <p class="text-slate-200 text-xs mb-3">무료 체험에서는 1위 타겟만 공개됩니다. PRO 로그인(테스트: host / 1900) 시 TOP 10 전체가 즉시 해제됩니다.</p>
-              <button onclick="openAuthModal('login', '🔒 <strong>벤치마킹 타겟 TOP 2~10위 상세 분석은 월 1,900원 PRO 회원 전용입니다.</strong><br/>로그인(테스트 계정: <code>host / 1900</code>) 시 모든 타겟의 약점과 언더컷 요금이 공개됩니다.')" class="px-5 py-2.5 rounded-xl airbnb-btn text-white font-black text-xs sm:text-sm shadow-xl">
+              <p class="text-slate-200 text-xs mb-3">무료 체험에서는 1위 타겟만 공개됩니다. 발급받은 PRO 계정 로그인 시 TOP 10 전체가 즉시 해제됩니다.</p>
+              <button onclick="openAuthModal('login', '🔒 <strong>벤치마킹 타겟 TOP 2~10위 상세 분석은 월 1,900원 PRO 회원 전용입니다.</strong><br/>발급받은 PRO 계정으로 로그인 시 모든 타겟의 약점과 언더컷 요금이 공개됩니다.')" class="px-5 py-2.5 rounded-xl airbnb-btn text-white font-black text-xs sm:text-sm shadow-xl">
                 🔐 PRO 로그인하고 TOP 10 전체 잠금 해제 →
               </button>
             </div>

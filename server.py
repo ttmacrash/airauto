@@ -1541,6 +1541,35 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
             self.wfile.write(body)
             return
 
+        if parsed.path == "/api/admin/users":
+            users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+            users_db = {}
+            if os.path.exists(users_file):
+                try:
+                    with open(users_file, "r", encoding="utf-8") as uf:
+                        users_db = json.load(uf)
+                except Exception:
+                    pass
+            user_list = [
+                {
+                    "username": k,
+                    "password": v.get("pw", ""),
+                    "name": v.get("name", k),
+                    "plan": v.get("plan", "PRO (월 1,900원)"),
+                    "active": v.get("active", True),
+                    "createdAt": v.get("createdAt", "2026-11-02"),
+                }
+                for k, v in users_db.items()
+            ]
+            body = json.dumps({"ok": True, "users": user_list}, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         return super().do_GET()
 
     def do_POST(self):
@@ -1552,36 +1581,69 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                 payload = json.loads(raw_body)
                 uid = (payload.get("username") or "").strip().lower()
                 upw = (payload.get("password") or "").strip()
-                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
-                users_db = {
-                    "host": {"pw": "1900", "name": "미쉘 (HOUSE-TORY 호스트)", "plan": "PRO (월 1,900원 무제한)"},
-                    "admin": {"pw": "1900", "name": "관리자 (PRO)", "plan": "PRO (월 1,900원 무제한)"},
-                    "michelle": {"pw": "1900", "name": "미쉘 호스트님", "plan": "PRO (월 1,900원 무제한)"},
-                }
-                if os.path.exists(users_file):
-                    try:
-                        with open(users_file, "r", encoding="utf-8") as uf:
-                            users_db.update(json.load(uf))
-                    except Exception:
-                        pass
 
-                if uid in users_db and users_db[uid]["pw"] == upw:
+                # 마스터 어드민 계정 확인 (절대 외부 화면에 노출되지 않음)
+                admin_accounts = {
+                    "ttmacrash": {"pw": "AirAuto!2026", "name": "총괄 어드민 (호스트님)", "plan": "MASTER ADMIN"},
+                    "admin": {"pw": "AirAuto!2026", "name": "총괄 어드민", "plan": "MASTER ADMIN"},
+                }
+                if uid in admin_accounts and admin_accounts[uid]["pw"] == upw:
                     resp_body = json.dumps(
                         {
                             "ok": True,
                             "user": {
                                 "username": uid,
-                                "name": users_db[uid]["name"],
-                                "plan": users_db[uid]["plan"],
+                                "name": admin_accounts[uid]["name"],
+                                "plan": admin_accounts[uid]["plan"],
                                 "isPro": True,
+                                "isAdmin": True,
                             },
                         },
                         ensure_ascii=False,
                     ).encode("utf-8")
                     self.send_response(200)
+                    self.send_header("Content-Type", "application/json; charset=utf-8")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.send_header("Content-Length", str(len(resp_body)))
+                    self.end_headers()
+                    self.wfile.write(resp_body)
+                    return
+
+                # 어드민이 발급한 일반 과금 회원(users.json) 확인
+                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+                users_db = {}
+                if os.path.exists(users_file):
+                    try:
+                        with open(users_file, "r", encoding="utf-8") as uf:
+                            users_db = json.load(uf)
+                    except Exception:
+                        pass
+
+                if uid in users_db and users_db[uid].get("pw") == upw:
+                    if not users_db[uid].get("active", True):
+                        resp_body = json.dumps(
+                            {"ok": False, "error": "이용 기간이 만료되었거나 정지된 계정입니다. 관리자에게 문의해 주세요."},
+                            ensure_ascii=False,
+                        ).encode("utf-8")
+                        self.send_response(403)
+                    else:
+                        resp_body = json.dumps(
+                            {
+                                "ok": True,
+                                "user": {
+                                    "username": uid,
+                                    "name": users_db[uid].get("name", uid),
+                                    "plan": users_db[uid].get("plan", "PRO (월 1,900원 구독)"),
+                                    "isPro": True,
+                                    "isAdmin": False,
+                                },
+                            },
+                            ensure_ascii=False,
+                        ).encode("utf-8")
+                        self.send_response(200)
                 else:
                     resp_body = json.dumps(
-                        {"ok": False, "error": "아이디 또는 비밀번호가 일치하지 않습니다. (테스트 계정: host / 1900)"},
+                        {"ok": False, "error": "아이디 또는 비밀번호가 일치하지 않습니다. 발급받은 PRO 계정 정보를 확인해 주세요."},
                         ensure_ascii=False,
                     ).encode("utf-8")
                     self.send_response(401)
@@ -1600,7 +1662,7 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(resp_body)
             return
 
-        if parsed.path == "/api/register":
+        if parsed.path == "/api/admin/create-user":
             length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"
             try:
@@ -1608,8 +1670,9 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                 uid = (payload.get("username") or "").strip().lower()
                 upw = (payload.get("password") or "").strip()
                 uname = (payload.get("name") or uid).strip()
+                uplan = (payload.get("plan") or "PRO (월 1,900원 구독)").strip()
                 if not uid or not upw:
-                    raise ValueError("아이디와 비밀번호를 모두 입력해 주세요.")
+                    raise ValueError("발급할 아이디와 비밀번호를 모두 입력해 주세요.")
                 users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
                 users_db = {}
                 if os.path.exists(users_file):
@@ -1618,21 +1681,80 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                             users_db = json.load(uf)
                     except Exception:
                         pass
-                users_db[uid] = {"pw": upw, "name": uname, "plan": "PRO (월 1,900원 구독 완료)"}
+                users_db[uid] = {
+                    "pw": upw,
+                    "name": uname,
+                    "plan": uplan,
+                    "active": True,
+                    "createdAt": datetime.date.today().isoformat(),
+                }
                 with open(users_file, "w", encoding="utf-8") as uf:
                     json.dump(users_db, uf, ensure_ascii=False, indent=2)
-                resp_body = json.dumps(
-                    {
-                        "ok": True,
-                        "user": {
-                            "username": uid,
-                            "name": uname,
-                            "plan": "PRO (월 1,900원 구독 완료)",
-                            "isPro": True,
-                        },
-                    },
-                    ensure_ascii=False,
-                ).encode("utf-8")
+                resp_body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            except Exception as e:
+                resp_body = json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False).encode("utf-8")
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            return
+
+        if parsed.path == "/api/admin/toggle-user":
+            length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"
+            try:
+                payload = json.loads(raw_body)
+                uid = (payload.get("username") or "").strip().lower()
+                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+                users_db = {}
+                if os.path.exists(users_file):
+                    with open(users_file, "r", encoding="utf-8") as uf:
+                        users_db = json.load(uf)
+                if uid in users_db:
+                    users_db[uid]["active"] = not users_db[uid].get("active", True)
+                    with open(users_file, "w", encoding="utf-8") as uf:
+                        json.dump(users_db, uf, ensure_ascii=False, indent=2)
+                resp_body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            except Exception as e:
+                resp_body = json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False).encode("utf-8")
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            return
+
+        if parsed.path == "/api/admin/delete-user":
+            length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"
+            try:
+                payload = json.loads(raw_body)
+                uid = (payload.get("username") or "").strip().lower()
+                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+                users_db = {}
+                if os.path.exists(users_file):
+                    with open(users_file, "r", encoding="utf-8") as uf:
+                        users_db = json.load(uf)
+                if uid in users_db:
+                    del users_db[uid]
+                    with open(users_file, "w", encoding="utf-8") as uf:
+                        json.dump(users_db, uf, ensure_ascii=False, indent=2)
+                resp_body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.send_header("Access-Control-Allow-Origin", "*")
