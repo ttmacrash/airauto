@@ -33,80 +33,90 @@
 </head>
 <body class="min-h-screen pb-28">
 
-  <!-- 상단 네비게이션 (2개 탭 메뉴 + 로그인/과금 상태 포함) -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+  <!-- 상단 네비게이션 (깔끔한 1줄 GNB 레이아웃) -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+      <!-- 좌측: 브랜드 로고 + 간결한 1줄 상태 배지 -->
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl airbnb-btn flex items-center justify-center font-black text-white text-lg">A</div>
-          <div>
-            <span class="font-extrabold text-lg text-slate-900">AirAuto</span>
-            <span id="headerPlanBadge" class="ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300">
-              🎁 무료 체험 모드 (1/1회)
-            </span>
-          </div>
+        <div class="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
+          <div class="w-8 h-8 rounded-xl airbnb-btn flex items-center justify-center font-black text-white text-base shadow-xs">A</div>
+          <span class="font-extrabold text-lg text-slate-900 tracking-tight">AirAuto</span>
+          <span id="headerPlanBadge" class="inline-flex items-center text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300 whitespace-nowrap">
+            🎁 무료 체험 (1/1회)
+          </span>
         </div>
-        <div class="flex sm:hidden items-center gap-1.5">
-          <button id="mobileAuthBtn" onclick="openAuthModal('login')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-xs">
+        <!-- 모바일 우측 버튼 -->
+        <div class="flex lg:hidden items-center gap-1.5 whitespace-nowrap">
+          <button
+            id="mobileAdminBtn"
+            onclick="openAdminModal()"
+            class="hidden px-2.5 py-1.5 rounded-lg bg-amber-400 text-slate-950 font-black text-xs whitespace-nowrap"
+          >
+            🛠️ 회원발급
+          </button>
+          <button id="mobileAuthBtn" onclick="openAuthModal('login')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-xs whitespace-nowrap">
             🔐 PRO 로그인
           </button>
         </div>
       </div>
 
-      <!-- 중앙 탭 전환 버튼 -->
-      <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+      <!-- 중앙: 2개 핵심 탭 전환 스위치 (줄바꿈·겹침 방지) -->
+      <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 whitespace-nowrap overflow-x-auto">
         <button
           id="navTab1Btn"
           onclick="switchMainTab('tab1')"
-          class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition"
+          class="flex-1 lg:flex-none px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition whitespace-nowrap"
         >
           🏠 1. 내 숙소 공실 진단 & 자동세팅
         </button>
         <button
           id="navTab2Btn"
           onclick="switchMainTab('tab2')"
-          class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition"
+          class="flex-1 lg:flex-none px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition whitespace-nowrap"
         >
-          🎯 2. 월 순수익 200 벤치마킹 타겟 발굴기 (9단계 공식)
+          🎯 2. 월 순수익 200 타겟 발굴기
         </button>
       </div>
 
-      <div class="hidden sm:flex items-center gap-2">
+      <!-- 우측: 계정/구독 액션 영역 (모두 1줄 고정, 로그인 시 불필요한 구독 버튼 자동 숨김) -->
+      <div class="hidden lg:flex items-center gap-2 whitespace-nowrap flex-shrink-0">
         <button
           id="adminManageBtn"
           onclick="openAdminModal()"
-          class="hidden px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs sm:text-sm transition shadow-sm"
+          class="hidden px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition shadow-xs whitespace-nowrap"
         >
-          🛠️ 어드민: 회원 ID/PW 발급·관리
+          🛠️ 회원 ID/PW 발급·관리
         </button>
         <button
           id="desktopAuthBtn"
           onclick="openAuthModal('login')"
-          class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm transition"
+          class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs transition whitespace-nowrap"
         >
           🔐 PRO 로그인
         </button>
-        <button onclick="openSubscribeModal()" class="airbnb-btn px-3.5 py-2 rounded-xl text-white font-bold text-xs sm:text-sm shadow-sm">
+        <button
+          id="headerSubscribeBtn"
+          onclick="openSubscribeModal()"
+          class="airbnb-btn px-3.5 py-2 rounded-xl text-white font-bold text-xs shadow-xs whitespace-nowrap"
+        >
           월 1,900원 구독 신청
         </button>
       </div>
     </div>
 
-    <!-- 무료 vs PRO 과금 기준 안내 바 (어드민 로그인 시에만 어드민 관리 버튼 표시, 일반 방문자에게는 ID/PW 비노출) -->
-    <div id="membershipSubBar" class="bg-slate-900 text-white px-4 py-2 text-xs">
-      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div id="membershipStatusText" class="text-slate-200">
-          💡 <strong class="text-amber-300">[무료 체험 안내]</strong> 비로그인 방문자는 최초 1회 공실 조회 및 주변 숙소 상위 2곳만 열람 가능합니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 TOP 10은 <strong class="text-white">월 1,900원 PRO 회원 로그인</strong> 후 이용 가능)
+    <!-- 비로그인 무료 방문자에게만 노출되는 슬림 안내 바 (로그인 시 자동 숨김 처리하여 상단 혼잡도 제거) -->
+    <div id="membershipSubBar" class="bg-slate-900 text-white px-4 py-1.5 text-xs">
+      <div class="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div id="membershipStatusText" class="text-slate-300 truncate">
+          💡 <strong class="text-amber-300">[무료 체험 모드]</strong> 비로그인 시 최초 1회 조회 및 상위 2곳 시세만 공개됩니다. (3~10위 시세 · 30일 1:1 비교표 · 타겟 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 즉시 해제)
         </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <button
-            id="subBarActionBtn"
-            onclick="openAuthModal('login')"
-            class="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition"
-          >
-            🔐 발급받은 PRO 계정으로 로그인 →
-          </button>
-        </div>
+        <button
+          id="subBarActionBtn"
+          onclick="openAuthModal('login')"
+          class="px-2.5 py-1 rounded-md bg-white/15 hover:bg-white/25 text-white font-bold text-[11px] transition whitespace-nowrap flex-shrink-0"
+        >
+          🔐 발급받은 PRO 계정 로그인 →
+        </button>
       </div>
     </div>
   </header>
@@ -831,64 +841,56 @@
     function updateAuthHeaderUI() {
       const badge = document.getElementById('headerPlanBadge');
       const mBtn = document.getElementById('mobileAuthBtn');
+      const mAdminBtn = document.getElementById('mobileAdminBtn');
       const dBtn = document.getElementById('desktopAuthBtn');
       const adminBtn = document.getElementById('adminManageBtn');
+      const subBtn = document.getElementById('headerSubscribeBtn');
       const subBar = document.getElementById('membershipSubBar');
-      const statusText = document.getElementById('membershipStatusText');
-      const subActionBtn = document.getElementById('subBarActionBtn');
 
       if (isProUser()) {
-        badge.className = 'ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300';
-        badge.textContent = isAdminUser() ? `🛠️ MASTER ADMIN (${currentUser.username})` : `👑 PRO 회원 (${currentUser.username})`;
+        badge.className = 'inline-flex items-center text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300 whitespace-nowrap';
+        badge.textContent = isAdminUser() ? '🛠️ ADMIN' : '👑 PRO';
+
         if (mBtn) {
           mBtn.textContent = '로그아웃';
+          mBtn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-300 font-bold text-xs whitespace-nowrap';
           mBtn.onclick = logoutProUser;
         }
+        if (mAdminBtn) {
+          if (isAdminUser()) mAdminBtn.classList.remove('hidden');
+          else mAdminBtn.classList.add('hidden');
+        }
         if (dBtn) {
-          dBtn.textContent = `👑 ${currentUser.name} (로그아웃)`;
-          dBtn.className = 'px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm transition';
+          dBtn.textContent = `👤 ${currentUser.username} · 로그아웃`;
+          dBtn.className = 'px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs transition whitespace-nowrap';
           dBtn.onclick = logoutProUser;
         }
         if (adminBtn) {
           if (isAdminUser()) adminBtn.classList.remove('hidden');
           else adminBtn.classList.add('hidden');
         }
-        subBar.className = 'bg-emerald-950 text-white px-4 py-2 text-xs';
-        statusText.innerHTML = isAdminUser()
-          ? `🛠️ <strong class="text-amber-300">[총괄 어드민 모드]</strong> 모든 PRO 기능이 해제되었으며, 우측 버튼에서 과금 고객용 ID/PW를 직접 발급·정지·삭제할 수 있습니다.`
-          : `✅ <strong class="text-emerald-300">[PRO 과금 회원 인증 완료]</strong> 무제한 숙소 조회 · 초근접 옆집 10곳 전수 시세 · 1:1 30일 판매가 비교표 · 벤치마킹 TOP 10이 모두 잠금 해제되었습니다.`;
-        if (subActionBtn) {
-          if (isAdminUser()) {
-            subActionBtn.className = 'px-3 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition';
-            subActionBtn.textContent = '🛠️ 고객 ID/PW 발급·관리 대시보드 열기';
-            subActionBtn.onclick = openAdminModal;
-          } else {
-            subActionBtn.className = 'px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition';
-            subActionBtn.textContent = '로그아웃';
-            subActionBtn.onclick = logoutProUser;
-          }
-        }
+        // 로그인 상태에서는 불필요한 '월 1,900원 구독 신청' 버튼과 하단 안내 바를 숨겨 상단 GNB를 1줄로 깔끔하게 유지
+        if (subBtn) subBtn.classList.add('hidden');
+        if (subBar) subBar.classList.add('hidden');
       } else {
         const remain = Math.max(0, 1 - freeQueryUsedCount);
-        badge.className = 'ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300';
-        badge.textContent = `🎁 무료 체험 (남은 무료조회 ${remain}/1회)`;
+        badge.className = 'inline-flex items-center text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300 whitespace-nowrap';
+        badge.textContent = `🎁 무료 체험 (${remain}/1회)`;
+
         if (mBtn) {
           mBtn.textContent = '🔐 PRO 로그인';
+          mBtn.className = 'px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-xs whitespace-nowrap';
           mBtn.onclick = () => openAuthModal('login');
         }
+        if (mAdminBtn) mAdminBtn.classList.add('hidden');
         if (dBtn) {
           dBtn.textContent = '🔐 PRO 로그인';
-          dBtn.className = 'px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm transition';
+          dBtn.className = 'px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs transition whitespace-nowrap';
           dBtn.onclick = () => openAuthModal('login');
         }
         if (adminBtn) adminBtn.classList.add('hidden');
-        subBar.className = 'bg-slate-900 text-white px-4 py-2 text-xs';
-        statusText.innerHTML = `💡 <strong class="text-amber-300">[무료 체험 안내]</strong> 비로그인 방문자는 최초 1회 공실 조회 및 주변 숙소 상위 2곳만 열람 가능합니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 해제)`;
-        if (subActionBtn) {
-          subActionBtn.className = 'px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition';
-          subActionBtn.textContent = '🔐 발급받은 PRO 계정으로 로그인 →';
-          subActionBtn.onclick = () => openAuthModal('login');
-        }
+        if (subBtn) subBtn.classList.remove('hidden');
+        if (subBar) subBar.classList.remove('hidden');
       }
     }
 
@@ -1901,13 +1903,13 @@
       if (tabName === 'tab1') {
         t1.classList.remove('hidden');
         t2.classList.add('hidden');
-        b1.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition';
-        b2.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition';
+        b1.className = 'flex-1 lg:flex-none px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition whitespace-nowrap';
+        b2.className = 'flex-1 lg:flex-none px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition whitespace-nowrap';
       } else {
         t1.classList.add('hidden');
         t2.classList.remove('hidden');
-        b2.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition';
-        b1.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition';
+        b2.className = 'flex-1 lg:flex-none px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition whitespace-nowrap';
+        b1.className = 'flex-1 lg:flex-none px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition whitespace-nowrap';
         if (!benchLoaded) {
           runBenchmarkScan();
         }
