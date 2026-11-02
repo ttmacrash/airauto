@@ -829,7 +829,10 @@
     let freeQueryUsedCount = 0;
 
     // 어드민 마스터 비밀번호 해시 (SHA-256) - 소스코드를 보더라도 평문 비밀번호 절대 노출 불가
-    const ADMIN_PW_SHA256 = 'c1bc243f9158c07fd6ce92125b985c0cdeac7511a905e423c89511ac05b18082';
+    const VALID_MASTER_PW_HASHES = new Set([
+      'c1bc243f9158c07fd6ce92125b985c0cdeac7511a905e423c89511ac05b18082',
+      '94cc1404ed528c3046c7cec9dc8db11704bf0bc603dd83c28ad264fd8e99035f'
+    ]);
 
     try {
       const savedUser = localStorage.getItem('airauto_user');
@@ -977,49 +980,67 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: uid, password: upw })
         });
-        serverResponded = true;
-        const json = await res.json();
-        if (json.ok && json.user) authenticatedUser = json.user;
-        else if (json.error) serverError = json.error;
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (ct.includes('application/json')) {
+          const json = await res.json();
+          if (json && typeof json.ok === 'boolean') {
+            serverResponded = true;
+            if (json.ok && json.user) authenticatedUser = json.user;
+            else if (json.error) serverError = json.error;
+          }
+        }
       } catch (e) {}
 
-      // Fallback for GitHub Pages serverless mode (checks localUsers first so password/grade changes work on static hosting too!)
+      // Fallback for GitHub Pages serverless mode (checks localUsers + SHA-256 master hashes)
       if (!authenticatedUser && !serverResponded) {
         const localUsers = getLocalUsersStore();
-        if (localUsers[uid]) {
-          if (localUsers[uid].deleted) {
-            errBox.textContent = '삭제된 계정입니다.';
+        const pwHash = await sha256Hex(upw);
+
+        if (localUsers[uid] && localUsers[uid].deleted) {
+          errBox.textContent = '삭제된 계정입니다.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        // 1) localStorage에 저장된 비밀번호와 일치하는 경우
+        if (localUsers[uid] && localUsers[uid].pw === upw) {
+          if (localUsers[uid].active === false) {
+            errBox.textContent = '이용 기간이 만료되었거나 일시정지된 계정입니다. 관리자에게 문의해 주세요.';
             errBox.classList.remove('hidden');
             return;
           }
-          if (localUsers[uid].pw === upw) {
-            if (localUsers[uid].active === false) {
-              errBox.textContent = '이용 기간이 만료되었거나 일시정지된 계정입니다. 관리자에게 문의해 주세요.';
-              errBox.classList.remove('hidden');
-              return;
-            }
-            const uRole = localUsers[uid].role || ((uid === 'admin' || uid === 'ttmacrash') ? 'ADMIN' : 'PRO');
-            authenticatedUser = {
-              username: uid,
-              name: localUsers[uid].name || uid,
-              role: uRole,
-              plan: uRole === 'ADMIN' ? 'MASTER ADMIN' : (localUsers[uid].plan || 'PRO (월 1,900원 구독)'),
-              isPro: true,
-              isAdmin: uRole === 'ADMIN'
-            };
-          }
-        } else {
-          const pwHash = await sha256Hex(upw);
-          if ((uid === 'ttmacrash' || uid === 'admin') && pwHash === ADMIN_PW_SHA256) {
-            authenticatedUser = {
-              username: uid,
-              name: uid === 'ttmacrash' ? '호스트님 (총괄 어드민)' : '총괄 어드민',
-              role: 'ADMIN',
-              plan: 'MASTER ADMIN',
-              isPro: true,
-              isAdmin: true
-            };
-          }
+          const uRole = localUsers[uid].role || ((uid === 'admin' || uid === 'ttmacrash') ? 'ADMIN' : 'PRO');
+          authenticatedUser = {
+            username: uid,
+            name: localUsers[uid].name || uid,
+            role: uRole,
+            plan: uRole === 'ADMIN' ? 'MASTER ADMIN' : (localUsers[uid].plan || 'PRO (월 1,900원 구독)'),
+            isPro: true,
+            isAdmin: uRole === 'ADMIN'
+          };
+        }
+        // 2) 마스터 계정(admin, ttmacrash) 또는 호스트님이 등록한 계정(crash)이 유효 마스터 해시와 일치하는 경우 (localStorage 구버전 데이터로 인해 막히는 현상 방지)
+        else if ((uid === 'ttmacrash' || uid === 'admin' || uid === 'crash') && VALID_MASTER_PW_HASHES.has(pwHash)) {
+          const uRole = (localUsers[uid] && localUsers[uid].role) || (uid === 'crash' ? 'PRO' : 'ADMIN');
+          const uName = (localUsers[uid] && localUsers[uid].name) || (uid === 'ttmacrash' ? '호스트님 (총괄 어드민)' : uid === 'admin' ? '총괄 어드민' : 'crash');
+          authenticatedUser = {
+            username: uid,
+            name: uName,
+            role: uRole,
+            plan: uRole === 'ADMIN' ? 'MASTER ADMIN' : 'PRO (월 1,900원 구독)',
+            isPro: true,
+            isAdmin: uRole === 'ADMIN'
+          };
+          // 방금 로그인 성공한 비밀번호로 localStorage 동기화
+          localUsers[uid] = {
+            ...(localUsers[uid] || {}),
+            pw: upw,
+            name: uName,
+            role: uRole,
+            plan: uRole === 'ADMIN' ? 'MASTER ADMIN' : 'PRO (월 1,900원 구독)',
+            active: true
+          };
+          saveLocalUsersStore(localUsers);
         }
       }
 
