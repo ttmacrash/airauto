@@ -1545,6 +1545,110 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
+        if parsed.path == "/api/login":
+            length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"
+            try:
+                payload = json.loads(raw_body)
+                uid = (payload.get("username") or "").strip().lower()
+                upw = (payload.get("password") or "").strip()
+                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+                users_db = {
+                    "host": {"pw": "1900", "name": "미쉘 (HOUSE-TORY 호스트)", "plan": "PRO (월 1,900원 무제한)"},
+                    "admin": {"pw": "1900", "name": "관리자 (PRO)", "plan": "PRO (월 1,900원 무제한)"},
+                    "michelle": {"pw": "1900", "name": "미쉘 호스트님", "plan": "PRO (월 1,900원 무제한)"},
+                }
+                if os.path.exists(users_file):
+                    try:
+                        with open(users_file, "r", encoding="utf-8") as uf:
+                            users_db.update(json.load(uf))
+                    except Exception:
+                        pass
+
+                if uid in users_db and users_db[uid]["pw"] == upw:
+                    resp_body = json.dumps(
+                        {
+                            "ok": True,
+                            "user": {
+                                "username": uid,
+                                "name": users_db[uid]["name"],
+                                "plan": users_db[uid]["plan"],
+                                "isPro": True,
+                            },
+                        },
+                        ensure_ascii=False,
+                    ).encode("utf-8")
+                    self.send_response(200)
+                else:
+                    resp_body = json.dumps(
+                        {"ok": False, "error": "아이디 또는 비밀번호가 일치하지 않습니다. (테스트 계정: host / 1900)"},
+                        ensure_ascii=False,
+                    ).encode("utf-8")
+                    self.send_response(401)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            except Exception as e:
+                resp_body = json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False).encode("utf-8")
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            return
+
+        if parsed.path == "/api/register":
+            length = int(self.headers.get("Content-Length", 0))
+            raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"
+            try:
+                payload = json.loads(raw_body)
+                uid = (payload.get("username") or "").strip().lower()
+                upw = (payload.get("password") or "").strip()
+                uname = (payload.get("name") or uid).strip()
+                if not uid or not upw:
+                    raise ValueError("아이디와 비밀번호를 모두 입력해 주세요.")
+                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+                users_db = {}
+                if os.path.exists(users_file):
+                    try:
+                        with open(users_file, "r", encoding="utf-8") as uf:
+                            users_db = json.load(uf)
+                    except Exception:
+                        pass
+                users_db[uid] = {"pw": upw, "name": uname, "plan": "PRO (월 1,900원 구독 완료)"}
+                with open(users_file, "w", encoding="utf-8") as uf:
+                    json.dump(users_db, uf, ensure_ascii=False, indent=2)
+                resp_body = json.dumps(
+                    {
+                        "ok": True,
+                        "user": {
+                            "username": uid,
+                            "name": uname,
+                            "plan": "PRO (월 1,900원 구독 완료)",
+                            "isPro": True,
+                        },
+                    },
+                    ensure_ascii=False,
+                ).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            except Exception as e:
+                resp_body = json.dumps({"ok": False, "error": str(e)}, ensure_ascii=False).encode("utf-8")
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.send_header("Content-Length", str(len(resp_body)))
+                self.end_headers()
+                self.wfile.write(resp_body)
+            return
+
         if parsed.path == "/api/run-bot":
             length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"

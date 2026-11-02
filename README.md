@@ -124,13 +124,33 @@ flowchart TB
 
 ---
 
-## 5. 파일 구성 및 배포 링크 (Repository & Files)
+## 5. 무료(비로그인) vs 과금(PRO 로그인) 차등 제어 및 인증 시스템 (Paywall & Auth)
+
+무료 방문자의 호기심을 자극해 전환율을 극대화하면서도, **월 1,900원 과금 회원(PRO)에게만 핵심 데이터를 무제한 개방**하도록 4단계 페이월(Paywall)과 ID/PW 로그인 인증을 구축했습니다.
+
+| 기능 구분 | 🎁 비로그인 무료 체험자 (Free Tier) | 👑 월 1,900원 과금 회원 (PRO Tier · 로그인 인증) |
+| :--- | :--- | :--- |
+| **숙소 URL 공실 조회 횟수** | **최초 1회 무료 조회 허용** (2회차 조회 또는 다른 월/다른 숙소 조회 시도 시 즉시 PRO 로그인 모달 팝업) | **무제한 실시간 조회** (모든 숙소·모든 월 무제한) |
+| **내 숙소 기본 공실 진단** | 빈 날짜 구간 & 방치 시 예상 손실액(`₩1,146,200`) 공개 (결제 유도 훅) | 전체 공개 |
+| **초근접(0m·옆집) & 1km 시세** | 상위 **2곳만 맛보기 공개**, **3위~10위는 블러(`blur`) + 🔒 PRO 잠금 오버레이** | **초근접 10곳 + 1km 10곳 전체 100% 공개** |
+| **1:1 30일 날짜별 판매가 비교표** | **🔒 잠금** (`[날짜별 판매가 비교]` 클릭 시 로그인 모달 오픈 → 로그인 즉시 해당 모달 자동 열림) | **전체 경쟁 숙소 30일 1:1 비교표 무제한 열람** |
+| **AI 자동 세팅 크롬 봇 실행** | **🔒 잠금** (시뮬레이터 미리보기만 가능, 실제 달력 변경 봇 실행 차단) | **⚡ 1클릭 크롬 자동 세팅 봇 무제한 실행** |
+| **탭 2: 월 순수익 200 타겟 발굴기** | **타겟 #1만 맛보기 공개**, 핵심 먹잇감인 **타겟 #2~#10은 블러(`blur`) 잠금** | **TOP 10 전체 먹잇감 & -₩5,000 언더컷 무제한 공개** |
+
+### 5.1 아이디/패스워드 인증 및 테스트 방법 (`/api/login` & `/api/register`)
+* **기본 발급 PRO 테스트 계정:** 아이디 `host` (또는 `admin`, `michelle`) / 비밀번호 `1900`
+* **신규 가입 및 즉시 계정 발급:** 로그인 모달의 **[✨ 월 1,900원 결제 & 계정 발급]** 탭에서 원하는 ID/PW를 입력하면 서버(`users.json`) 및 브라우저에 즉시 PRO 계정이 등록되어 로그인이 유지됩니다.
+* **호스트님 전용 1클릭 화면 전환 바:** 상단 네비게이션 바로 아래에 **`[⚡ 1클릭 테스트: PRO 과금 회원 화면으로 전환 (host/1900)]`** ↔ **`[🔄 무료(비로그인) 화면으로 전환해 비교해보기]`** 토글 버튼을 배치하여, 비회원 블러 잠금 화면과 유료 회원 전체 공개 화면을 1초 만에 오가며 비교할 수 있습니다.
+
+---
+
+## 6. 파일 구성 및 배포 링크 (Repository & Files)
 
 * **웹 배포 주소 (GitHub Pages):** `https://ttmacrash.github.io/airauto/`
 * **GitHub 저장소:** `https://github.com/ttmacrash/airauto`
 * **로컬 서버 주소:** `http://localhost:8765`
 * **주요 소스 파일:**
-  * 프론트엔드 웹앱 (탭 1 + 탭 2 + 1:1 비교 모달 + 자동세팅 시뮬레이터): [index.html](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/index.html)
-  * 백엔드 API 서버 (GraphQL 달력·가격 역추적 & 벤치마킹 스캐너): [server.py](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/server.py)
+  * 프론트엔드 웹앱 (탭 1 + 탭 2 + 무료/PRO 블러 페이월 + 로그인 모달): [index.html](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/index.html)
+  * 백엔드 API 서버 (`/api/login`, `/api/register`, `/api/analyze`, `/api/competitor-detail`, `/api/benchmark-scan`): [server.py](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/server.py)
   * 로컬 크롬 자동 세팅 봇 (Playwright 기반 멀티달력 제어): [bot_runner.js](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/bot_runner.js)
   * 서버리스 정적 스냅샷 데이터: [analyze_2026_11.json](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/data/analyze_2026_11.json), [benchmark_saejeol.json](file:///Users/jaerimjeong/.gemini/antigravity/scratch/airauto/data/benchmark_saejeol.json) 및 17개 경쟁 숙소별 `comp_*_2026_11.json`

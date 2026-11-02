@@ -33,7 +33,7 @@
 </head>
 <body class="min-h-screen pb-28">
 
-  <!-- 상단 네비게이션 (2개 탭 메뉴 포함) -->
+  <!-- 상단 네비게이션 (2개 탭 메뉴 + 로그인/과금 상태 포함) -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
     <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
       <div class="flex items-center justify-between">
@@ -41,12 +41,16 @@
           <div class="w-9 h-9 rounded-xl airbnb-btn flex items-center justify-center font-black text-white text-lg">A</div>
           <div>
             <span class="font-extrabold text-lg text-slate-900">AirAuto</span>
-            <span class="ml-1.5 text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200">AI 공동호스트</span>
+            <span id="headerPlanBadge" class="ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300">
+              🎁 무료 체험 모드 (1/1회)
+            </span>
           </div>
         </div>
-        <button onclick="openSubscribeModal()" class="sm:hidden airbnb-btn px-3 py-1.5 rounded-lg text-white font-bold text-xs">
-          월 1,900원 구독
-        </button>
+        <div class="flex sm:hidden items-center gap-1.5">
+          <button id="mobileAuthBtn" onclick="openAuthModal('login')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white font-bold text-xs">
+            🔐 PRO 로그인
+          </button>
+        </div>
       </div>
 
       <!-- 중앙 탭 전환 버튼 -->
@@ -67,10 +71,35 @@
         </button>
       </div>
 
-      <div class="hidden sm:flex items-center gap-3">
-        <button onclick="openSubscribeModal()" class="airbnb-btn px-4 py-2 rounded-xl text-white font-bold text-xs sm:text-sm shadow-sm">
-          월 1,900원 자동 세팅 켜기
+      <div class="hidden sm:flex items-center gap-2">
+        <button
+          id="desktopAuthBtn"
+          onclick="openAuthModal('login')"
+          class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm transition"
+        >
+          🔐 PRO 로그인
         </button>
+        <button onclick="openSubscribeModal()" class="airbnb-btn px-3.5 py-2 rounded-xl text-white font-bold text-xs sm:text-sm shadow-sm">
+          월 1,900원 구독
+        </button>
+      </div>
+    </div>
+
+    <!-- 무료 vs PRO 과금 기준 안내 및 1클릭 테스트 전환 바 -->
+    <div id="membershipSubBar" class="bg-slate-900 text-white px-4 py-2 text-xs">
+      <div class="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div id="membershipStatusText" class="text-slate-200">
+          💡 <strong class="text-amber-300">[비로그인 무료 기준]</strong> 최초 1회 공실 조회 & 주변 숙소 상위 2곳만 공개됩니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 타겟 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 해제)
+        </div>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button
+            id="quickToggleProBtn"
+            onclick="quickToggleProDemo()"
+            class="px-3 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition"
+          >
+            ⚡ 1클릭 테스트: PRO 과금 회원 화면으로 전환 (host/1900)
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -616,16 +645,315 @@
     </div>
   </div>
 
+  <!-- 🔐 PRO 회원 로그인 & 월 1,900원 과금 인증 모달 -->
+  <div id="authModal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 relative">
+      <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 font-bold text-lg">✕</button>
+
+      <!-- 왜 이 창이 떴는지 안내 배너 (2회차 조회 제한 / 상세비교 잠금 등) -->
+      <div id="authPaywallReasonBox" class="hidden mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-bold leading-relaxed">
+      </div>
+
+      <!-- 상단 탭: 로그인 vs 신규 월 1,900원 가입 -->
+      <div class="flex bg-slate-100 p-1 rounded-xl mb-5 border border-slate-200">
+        <button id="authTabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg text-xs font-extrabold bg-white text-slate-900 shadow-sm">
+          🔐 PRO 회원 로그인 (ID/PW)
+        </button>
+        <button id="authTabRegBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-xs font-extrabold text-slate-500 hover:text-slate-900">
+          ✨ 월 1,900원 결제 & 계정 발급
+        </button>
+      </div>
+
+      <!-- 로그인 폼 -->
+      <div id="authLoginForm" class="space-y-4">
+        <div>
+          <h3 class="text-lg font-black text-slate-900">과금 회원(PRO) 인증 로그인</h3>
+          <p class="text-xs text-slate-500 mt-0.5">로그인 즉시 무제한 숙소 조회 · 30일 1:1 비교표 · 벤치마킹 TOP 10 잠금이 해제됩니다.</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-2">
+          <div class="text-xs text-amber-900">
+            <strong>💡 호스트님 테스트 계정:</strong> ID <code class="font-black">host</code> / PW <code class="font-black">1900</code>
+          </div>
+          <button onclick="fillDemoLogin()" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-[11px] flex-shrink-0">
+            1클릭 자동입력
+          </button>
+        </div>
+
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 mb-1">아이디 (ID)</label>
+            <input id="loginUsernameInput" type="text" placeholder="아이디 입력 (예: host)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 mb-1">비밀번호 (Password)</label>
+            <input id="loginPasswordInput" type="password" placeholder="비밀번호 입력 (예: 1900)" onkeydown="if(event.key==='Enter') submitLogin()" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+          </div>
+        </div>
+
+        <div id="loginErrorMsg" class="hidden text-xs font-bold text-rose-600"></div>
+
+        <button onclick="submitLogin()" class="w-full py-3.5 rounded-xl airbnb-btn font-black text-white text-sm shadow-md">
+          로그인하고 모든 데이터 잠금 해제 →
+        </button>
+
+        <!-- 무료 vs 유료 혜택 비교 요약 -->
+        <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-1.5 text-slate-600">
+          <div class="font-extrabold text-slate-900 mb-1">📊 무료 체험 vs 월 1,900원 PRO 회원 차이</div>
+          <div class="flex justify-between"><span>• 숙소 공실 조회 횟수</span><span>무료 <strong>1회</strong> vs PRO <strong class="text-rose-600">무제한</strong></span></div>
+          <div class="flex justify-between"><span>• 같은 건물·옆집 시세</span><span>상위 2곳 vs PRO <strong class="text-rose-600">10곳 전수 공개</strong></span></div>
+          <div class="flex justify-between"><span>• 1:1 30일 날짜별 판매가 표</span><span>잠금(🔒) vs PRO <strong class="text-rose-600">무제한 열람</strong></span></div>
+          <div class="flex justify-between"><span>• 월 순수익 200 타겟 발굴기</span><span>1위만 맛보기 vs PRO <strong class="text-rose-600">TOP 10 전체</strong></span></div>
+        </div>
+      </div>
+
+      <!-- 신규 과금 계정 발급 폼 -->
+      <div id="authRegisterForm" class="hidden space-y-4">
+        <div>
+          <h3 class="text-lg font-black text-slate-900">월 1,900원 구독 & 전용 ID/PW 즉시 발급</h3>
+          <p class="text-xs text-slate-500 mt-0.5">숙소 1개당 커피 한 잔 값도 안 되는 월 1,900원으로 무제한 경쟁사 분석과 자동 세팅을 이용하세요.</p>
+        </div>
+
+        <div class="space-y-2.5">
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 mb-1">호스트 닉네임 / 숙소명</label>
+            <input id="regNameInput" type="text" placeholder="예: 미쉘 (HOUSE-TORY)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 mb-1">사용할 아이디 (ID)</label>
+            <input id="regUsernameInput" type="text" placeholder="영문/숫자 아이디 입력" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 mb-1">사용할 비밀번호 (Password)</label>
+            <input id="regPasswordInput" type="password" placeholder="비밀번호 입력" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-rose-500" />
+          </div>
+        </div>
+
+        <div id="regErrorMsg" class="hidden text-xs font-bold text-rose-600"></div>
+
+        <button onclick="submitRegister()" class="w-full py-3.5 rounded-xl airbnb-btn font-black text-white text-sm shadow-md">
+          월 ₩1,900 구독 시작 & 즉시 로그인 →
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentAnalysisData = null;
+    let currentBenchmarkData = null;
     let extraSlots = [];
+    let pendingCompDetailId = null;
+
+    // ==================== 과금(PRO) / 비과금(Free) & 1회 무료 조회 상태 관리 ====================
+    let currentUser = null;
+    let freeQueryUsedCount = 0;
+
+    try {
+      const savedUser = localStorage.getItem('airauto_user');
+      if (savedUser) currentUser = JSON.parse(savedUser);
+      freeQueryUsedCount = parseInt(localStorage.getItem('airauto_free_count') || '0', 10);
+    } catch (e) {}
+
+    function isProUser() {
+      return Boolean(currentUser && currentUser.isPro);
+    }
+
+    function updateAuthHeaderUI() {
+      const badge = document.getElementById('headerPlanBadge');
+      const mBtn = document.getElementById('mobileAuthBtn');
+      const dBtn = document.getElementById('desktopAuthBtn');
+      const subBar = document.getElementById('membershipSubBar');
+      const statusText = document.getElementById('membershipStatusText');
+      const quickBtn = document.getElementById('quickToggleProBtn');
+
+      if (isProUser()) {
+        badge.className = 'ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold border border-emerald-300';
+        badge.textContent = `👑 PRO 무제한 (${currentUser.username})`;
+        if (mBtn) {
+          mBtn.textContent = '로그아웃';
+          mBtn.onclick = logoutProUser;
+        }
+        if (dBtn) {
+          dBtn.textContent = `👑 ${currentUser.name} (로그아웃)`;
+          dBtn.className = 'px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold text-xs sm:text-sm transition';
+          dBtn.onclick = logoutProUser;
+        }
+        subBar.className = 'bg-emerald-950 text-white px-4 py-2 text-xs';
+        statusText.innerHTML = `✅ <strong class="text-emerald-300">[PRO 과금 회원 인증 완료]</strong> 무제한 숙소 조회 · 초근접 옆집 10곳 전수 시세 · 1:1 30일 판매가 비교표 · 벤치마킹 TOP 10이 모두 잠금 해제되었습니다.`;
+        quickBtn.className = 'px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs transition';
+        quickBtn.textContent = '🔄 무료(비로그인) 화면으로 전환해 비교해보기';
+      } else {
+        const remain = Math.max(0, 1 - freeQueryUsedCount);
+        badge.className = 'ml-1.5 text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 font-extrabold border border-slate-300';
+        badge.textContent = `🎁 무료 체험 (남은 무료조회 ${remain}/1회)`;
+        if (mBtn) {
+          mBtn.textContent = '🔐 PRO 로그인';
+          mBtn.onclick = () => openAuthModal('login');
+        }
+        if (dBtn) {
+          dBtn.textContent = '🔐 PRO 로그인';
+          dBtn.className = 'px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm transition';
+          dBtn.onclick = () => openAuthModal('login');
+        }
+        subBar.className = 'bg-slate-900 text-white px-4 py-2 text-xs';
+        statusText.innerHTML = `💡 <strong class="text-amber-300">[비로그인 무료 기준]</strong> 최초 1회 공실 조회 & 주변 숙소 상위 2곳만 공개됩니다. (3~10위 시세 · 1:1 30일 상세 비교표 · 벤치마킹 타겟 TOP 10은 <strong class="text-white">PRO 로그인</strong> 시 해제)`;
+        quickBtn.className = 'px-3 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition';
+        quickBtn.textContent = '⚡ 1클릭 테스트: PRO 과금 회원 화면으로 전환 (host/1900)';
+      }
+    }
+
+    function openAuthModal(mode = 'login', paywallReason = '') {
+      document.getElementById('authModal').classList.remove('hidden');
+      const reasonBox = document.getElementById('authPaywallReasonBox');
+      if (paywallReason) {
+        reasonBox.innerHTML = paywallReason;
+        reasonBox.classList.remove('hidden');
+      } else {
+        reasonBox.classList.add('hidden');
+      }
+      switchAuthTab(mode);
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+      document.getElementById('loginErrorMsg').classList.add('hidden');
+      document.getElementById('regErrorMsg').classList.add('hidden');
+    }
+
+    function switchAuthTab(mode) {
+      const lForm = document.getElementById('authLoginForm');
+      const rForm = document.getElementById('authRegisterForm');
+      const lBtn = document.getElementById('authTabLoginBtn');
+      const rBtn = document.getElementById('authTabRegBtn');
+      if (mode === 'register') {
+        lForm.classList.add('hidden');
+        rForm.classList.remove('hidden');
+        rBtn.className = 'flex-1 py-2 rounded-lg text-xs font-extrabold bg-white text-slate-900 shadow-sm';
+        lBtn.className = 'flex-1 py-2 rounded-lg text-xs font-extrabold text-slate-500 hover:text-slate-900';
+      } else {
+        rForm.classList.add('hidden');
+        lForm.classList.remove('hidden');
+        lBtn.className = 'flex-1 py-2 rounded-lg text-xs font-extrabold bg-white text-slate-900 shadow-sm';
+        rBtn.className = 'flex-1 py-2 rounded-lg text-xs font-extrabold text-slate-500 hover:text-slate-900';
+      }
+    }
+
+    function fillDemoLogin() {
+      document.getElementById('loginUsernameInput').value = 'host';
+      document.getElementById('loginPasswordInput').value = '1900';
+    }
+
+    async function submitLogin() {
+      const uid = document.getElementById('loginUsernameInput').value.trim().toLowerCase();
+      const upw = document.getElementById('loginPasswordInput').value.trim();
+      const errBox = document.getElementById('loginErrorMsg');
+      errBox.classList.add('hidden');
+
+      let authenticatedUser = null;
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uid, password: upw })
+        });
+        const json = await res.json();
+        if (json.ok && json.user) authenticatedUser = json.user;
+      } catch (e) {}
+
+      // Fallback for GitHub Pages serverless mode
+      if (!authenticatedUser) {
+        const localUsers = JSON.parse(localStorage.getItem('airauto_custom_users') || '{}');
+        const builtIn = {
+          host: { pw: '1900', name: '미쉘 (HOUSE-TORY 호스트)', plan: 'PRO (월 1,900원 무제한)' },
+          admin: { pw: '1900', name: '관리자 (PRO)', plan: 'PRO (월 1,900원 무제한)' },
+          michelle: { pw: '1900', name: '미쉘 호스트님', plan: 'PRO (월 1,900원 무제한)' }
+        };
+        const merged = { ...builtIn, ...localUsers };
+        if (merged[uid] && merged[uid].pw === upw) {
+          authenticatedUser = { username: uid, name: merged[uid].name, plan: merged[uid].plan, isPro: true };
+        }
+      }
+
+      if (!authenticatedUser) {
+        errBox.textContent = '아이디 또는 비밀번호가 올바르지 않습니다. (테스트 계정: host / 1900)';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      currentUser = authenticatedUser;
+      try { localStorage.setItem('airauto_user', JSON.stringify(currentUser)); } catch (e) {}
+      closeAuthModal();
+      updateAuthHeaderUI();
+      if (currentAnalysisData) renderAnalysisResult(currentAnalysisData);
+      if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
+      if (pendingCompDetailId) {
+        const targetId = pendingCompDetailId;
+        pendingCompDetailId = null;
+        openCompDetailModal(targetId);
+      }
+    }
+
+    async function submitRegister() {
+      const name = document.getElementById('regNameInput').value.trim() || 'PRO 호스트';
+      const uid = document.getElementById('regUsernameInput').value.trim().toLowerCase();
+      const upw = document.getElementById('regPasswordInput').value.trim();
+      const errBox = document.getElementById('regErrorMsg');
+      errBox.classList.add('hidden');
+
+      if (!uid || !upw) {
+        errBox.textContent = '사용하실 아이디와 비밀번호를 입력해주세요.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uid, password: upw, name })
+        });
+      } catch (e) {}
+
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('airauto_custom_users') || '{}');
+        localUsers[uid] = { pw: upw, name, plan: 'PRO (월 1,900원 구독 완료)' };
+        localStorage.setItem('airauto_custom_users', JSON.stringify(localUsers));
+      } catch (e) {}
+
+      currentUser = { username: uid, name, plan: 'PRO (월 1,900원 구독 완료)', isPro: true };
+      try { localStorage.setItem('airauto_user', JSON.stringify(currentUser)); } catch (e) {}
+      closeAuthModal();
+      updateAuthHeaderUI();
+      if (currentAnalysisData) renderAnalysisResult(currentAnalysisData);
+      if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
+    }
+
+    function logoutProUser() {
+      currentUser = null;
+      try { localStorage.removeItem('airauto_user'); } catch (e) {}
+      updateAuthHeaderUI();
+      if (currentAnalysisData) renderAnalysisResult(currentAnalysisData);
+      if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
+    }
+
+    function quickToggleProDemo() {
+      if (isProUser()) {
+        logoutProUser();
+      } else {
+        currentUser = { username: 'host', name: '미쉘 (HOUSE-TORY 호스트)', plan: 'PRO (월 1,900원 무제한)', isPro: true };
+        try { localStorage.setItem('airauto_user', JSON.stringify(currentUser)); } catch (e) {}
+        updateAuthHeaderUI();
+        if (currentAnalysisData) renderAnalysisResult(currentAnalysisData);
+        if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
+      }
+    }
 
     function formatKRW(num) {
       if (!num && num !== 0) return '-';
       return '₩' + Number(num).toLocaleString('ko-KR');
     }
 
-    async function runAnalysis() {
+    async function runAnalysis(isInitialAutoRun = false) {
       const urlInput = document.getElementById('listingUrlInput').value.trim();
       const ym = document.getElementById('targetMonthSelect').value.split('-');
       const year = ym[0];
@@ -634,6 +962,20 @@
       if (!urlInput) {
         alert('에어비앤비 숙소 링크를 입력해주세요.');
         return;
+      }
+
+      // 과금 기준 1: 비로그인 무료 사용자는 최초 1회 조회만 무료 허용! 2회차 조회부터는 로그인/구독 유도
+      if (!isProUser() && !isInitialAutoRun && freeQueryUsedCount >= 1) {
+        openAuthModal(
+          'login',
+          '🔒 <strong>무료 1회 조회를 이미 사용하셨습니다!</strong><br/>다른 숙소 링크나 다른 월(12월·1월)을 무제한으로 조회하시려면 월 1,900원 PRO 계정으로 로그인해 주세요. (테스트 계정: <code>host</code> / <code>1900</code>)'
+        );
+        return;
+      }
+      if (!isProUser()) {
+        freeQueryUsedCount = Math.max(1, freeQueryUsedCount + 1);
+        try { localStorage.setItem('airauto_free_count', String(freeQueryUsedCount)); } catch (e) {}
+        updateAuthHeaderUI();
       }
 
       document.getElementById('loadingBox').classList.remove('hidden');
@@ -778,7 +1120,8 @@
 
       if (ultraNeighbors.length > 0) {
         ultraSection.classList.remove('hidden');
-        ultraNeighbors.forEach(nb => {
+        ultraNeighbors.forEach((nb, idx) => {
+          const isLocked = !isProUser() && idx >= 2;
           const distLabel = nb.distanceM <= 10
             ? `🏢 같은 건물 (좌표오차 ${nb.distanceM}m)`
             : `🏢 같은 건물/블록 (좌표오차 ${nb.distanceM}m)`;
@@ -840,48 +1183,59 @@
           }
 
           const card = document.createElement('div');
-          card.className = 'p-4 rounded-2xl border-2 border-amber-300 hover:border-rose-500 bg-white shadow-sm hover:shadow-md transition flex flex-col justify-between gap-3';
+          card.className = 'relative p-4 rounded-2xl border-2 border-amber-300 hover:border-rose-500 bg-white shadow-sm hover:shadow-md transition overflow-hidden';
           card.innerHTML = `
-            <div class="flex items-start gap-3.5">
-              <img src="${nb.thumbnailUrl || ''}" alt="옆집숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                  <span class="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[11px] font-extrabold">${distLabel}</span>
-                  <span class="text-xs font-bold text-slate-700">★ ${nb.rating}</span>
+            <div class="${isLocked ? 'blur-[5px] select-none pointer-events-none' : ''} flex flex-col justify-between gap-3 h-full">
+              <div class="flex items-start gap-3.5">
+                <img src="${nb.thumbnailUrl || ''}" alt="옆집숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                    <span class="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[11px] font-extrabold">${distLabel}</span>
+                    <span class="text-xs font-bold text-slate-700">★ ${nb.rating}</span>
+                  </div>
+                  <div class="font-extrabold text-sm text-slate-900 truncate">${nb.name}</div>
+                  <div class="text-xs text-slate-500 truncate mt-0.5">${nb.specs}</div>
                 </div>
-                <div class="font-extrabold text-sm text-slate-900 truncate">${nb.name}</div>
-                <div class="text-xs text-slate-500 truncate mt-0.5">${nb.specs}</div>
+              </div>
+
+              ${priceCompareHtml}
+
+              <div class="pt-2 border-t border-slate-100 flex flex-col gap-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="text-xs text-slate-600">
+                    ${targetMonth}월 성적: <strong class="text-slate-900 font-black text-sm">${nb.bookedDays}박 완료 / 잔여 ${nb.openDays}박 (${nb.occupancyRate}%)</strong>
+                  </div>
+                  ${occBadge}
+                </div>
+                <div class="flex flex-wrap gap-1">
+                  ${secretPills.join('')}
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                  <button
+                    onclick="openCompDetailModal('${nb.listingId}')"
+                    class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-extrabold text-xs transition shadow-sm"
+                  >
+                    🔍 날짜별 판매가 & 내 집과 1:1 비교표 보기
+                  </button>
+                  <a
+                    href="${nb.url}"
+                    target="_blank"
+                    class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition whitespace-nowrap"
+                  >
+                    에어비앤비 ↗
+                  </a>
+                </div>
               </div>
             </div>
-
-            ${priceCompareHtml}
-
-            <div class="pt-2 border-t border-slate-100 flex flex-col gap-2.5">
-              <div class="flex items-center justify-between">
-                <div class="text-xs text-slate-600">
-                  ${targetMonth}월 성적: <strong class="text-slate-900 font-black text-sm">${nb.bookedDays}박 완료 / 잔여 ${nb.openDays}박 (${nb.occupancyRate}%)</strong>
-                </div>
-                ${occBadge}
-              </div>
-              <div class="flex flex-wrap gap-1">
-                ${secretPills.join('')}
-              </div>
-              <div class="flex items-center gap-2 pt-1">
-                <button
-                  onclick="openCompDetailModal('${nb.listingId}')"
-                  class="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-extrabold text-xs transition shadow-sm"
-                >
-                  🔍 날짜별 판매가 & 내 집과 1:1 비교표 보기
+            ${isLocked ? `
+              <div class="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center">
+                <span class="px-2.5 py-1 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black mb-1.5">🔒 월 1,900원 PRO 전용 데이터 (옆집 #${idx + 1})</span>
+                <p class="text-white font-extrabold text-xs sm:text-sm mb-2.5">이 옆집의 11월 예약률(${nb.occupancyRate}%)과 2인/4인 요금·최소박수 확인하기</p>
+                <button onclick="openAuthModal('login', '🔒 <strong>초근접 옆집 3~10위 시세 및 최소숙박일수는 PRO 회원 전용입니다.</strong><br/>로그인(테스트 계정: <code>host / 1900</code>) 시 10곳 전체가 즉시 공개됩니다.')" class="px-4 py-2 rounded-xl airbnb-btn text-white font-black text-xs shadow-lg">
+                  🔐 PRO 로그인으로 잠금 해제 →
                 </button>
-                <a
-                  href="${nb.url}"
-                  target="_blank"
-                  class="py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition whitespace-nowrap"
-                >
-                  에어비앤비 ↗
-                </a>
               </div>
-            </div>
+            ` : ''}
           `;
           ultraGrid.appendChild(card);
         });
@@ -898,6 +1252,7 @@
       const compGrid = document.getElementById('competitorsGrid');
       compGrid.innerHTML = '';
       competitors.forEach((c, idx) => {
+        const isLocked = !isProUser() && idx >= 2;
         const diff = c.perNightPrice - myPrice;
         const isCheaper = diff < 0;
         const diffBadge = isCheaper
@@ -905,40 +1260,50 @@
           : `<span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-xs font-bold">내 숙소보다 ${formatKRW(diff)} 비쌈</span>`;
 
         const item = document.createElement('div');
-        item.className = 'p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 hover:shadow-md transition flex flex-col justify-between gap-3 bg-white';
+        item.className = 'relative p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 hover:shadow-md transition bg-white overflow-hidden';
         item.innerHTML = `
-          <div class="flex items-center gap-3.5">
-            <img src="${c.thumbnailUrl || ''}" alt="경쟁숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
-                <span class="font-bold text-rose-600">거리 ${c.distanceM}m</span>
-                <span>·</span>
-                <span class="font-semibold text-slate-700">★ ${c.rating}</span>
-                ${c.hasDiscount ? '<span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">할인중</span>' : ''}
-              </div>
-              <div class="font-bold text-sm text-slate-900 truncate">${c.name}</div>
-              <div class="text-xs text-slate-500 truncate mt-0.5">${c.specs}</div>
-              <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
-                <div>
-                  ${c.originalPerNightPrice ? `<span class="text-xs text-slate-400 line-through mr-1">${formatKRW(c.originalPerNightPrice)}</span>` : ''}
-                  <span class="font-black text-base text-slate-900">${formatKRW(c.perNightPrice)}</span>
-                  <span class="text-xs text-slate-500">/박</span>
+          <div class="${isLocked ? 'blur-[5px] select-none pointer-events-none' : ''} flex flex-col justify-between gap-3 h-full">
+            <div class="flex items-center gap-3.5">
+              <img src="${c.thumbnailUrl || ''}" alt="경쟁숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
+                  <span class="font-bold text-rose-600">거리 ${c.distanceM}m</span>
+                  <span>·</span>
+                  <span class="font-semibold text-slate-700">★ ${c.rating}</span>
+                  ${c.hasDiscount ? '<span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">할인중</span>' : ''}
                 </div>
-                ${diffBadge}
+                <div class="font-bold text-sm text-slate-900 truncate">${c.name}</div>
+                <div class="text-xs text-slate-500 truncate mt-0.5">${c.specs}</div>
+                <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+                  <div>
+                    ${c.originalPerNightPrice ? `<span class="text-xs text-slate-400 line-through mr-1">${formatKRW(c.originalPerNightPrice)}</span>` : ''}
+                    <span class="font-black text-base text-slate-900">${formatKRW(c.perNightPrice)}</span>
+                    <span class="text-xs text-slate-500">/박</span>
+                  </div>
+                  ${diffBadge}
+                </div>
               </div>
             </div>
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <button
+                onclick="openCompDetailModal('${c.listingId}')"
+                class="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-bold text-xs transition"
+              >
+                🔍 날짜별 판매가 & 내 집과 1:1 비교표
+              </button>
+              <a href="${c.url}" target="_blank" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                에어비앤비 ↗
+              </a>
+            </div>
           </div>
-          <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
-            <button
-              onclick="openCompDetailModal('${c.listingId}')"
-              class="flex-1 py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-bold text-xs transition"
-            >
-              🔍 날짜별 판매가 & 내 집과 1:1 비교표
-            </button>
-            <a href="${c.url}" target="_blank" class="py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
-              에어비앤비 ↗
-            </a>
-          </div>
+          ${isLocked ? `
+            <div class="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-3 text-center">
+              <span class="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black mb-1">🔒 PRO 전용 (1km 경쟁사 #${idx + 1})</span>
+              <button onclick="openAuthModal('login', '🔒 <strong>반경 1km 경쟁 숙소 3~10위 시세는 PRO 회원 전용입니다.</strong><br/>PRO 로그인 시 전체 잠금이 해제됩니다.')" class="mt-1 px-3.5 py-1.5 rounded-xl airbnb-btn text-white font-black text-xs shadow">
+                🔐 PRO 로그인으로 잠금 해제 →
+              </button>
+            </div>
+          ` : ''}
         `;
         compGrid.appendChild(item);
       });
@@ -1007,6 +1372,17 @@
 
     async function openCompDetailModal(compId) {
       if (!currentAnalysisData) return;
+
+      // 과금 기준 2: 1:1 30일 날짜별 판매가 비교 모달은 PRO 과금 회원 전용!
+      if (!isProUser()) {
+        pendingCompDetailId = compId;
+        openAuthModal(
+          'login',
+          '🔒 <strong>1:1 30일 날짜별 판매가 및 최소박수 비교표는 PRO 과금 회원 전용입니다!</strong><br/>로그인(테스트 계정: <code>host</code> / <code>1900</code>) 즉시 방금 선택하신 숙소의 30일 전체 가격 비교표가 열립니다.'
+        );
+        return;
+      }
+
       const myId = currentAnalysisData.meta.listingId;
       const year = currentAnalysisData.targetYear;
       const month = currentAnalysisData.targetMonth;
@@ -1220,6 +1596,13 @@
         alert('먼저 숙소 무료 진단을 실행해주세요.');
         return;
       }
+      if (!isProUser()) {
+        openAuthModal(
+          'login',
+          '🔒 <strong>에어비앤비 달력 1클릭 자동 세팅 봇은 월 1,900원 PRO 회원 전용입니다!</strong><br/>PRO 계정으로 로그인(테스트 계정: <code>host</code> / <code>1900</code>) 후 즉시 실행하실 수 있습니다.'
+        );
+        return;
+      }
       const floorPrice = parseInt(document.getElementById('minFloorSlider').value, 10);
       const listingId = currentAnalysisData.meta.listingId;
 
@@ -1337,6 +1720,7 @@
 
         if (json && json.ok) {
           benchLoaded = true;
+          currentBenchmarkData = json.data;
           renderBenchmarkTargets(json.data);
         }
       } catch (err) {
@@ -1347,6 +1731,7 @@
     }
 
     function renderBenchmarkTargets(data) {
+      currentBenchmarkData = data;
       document.getElementById('benchResultContainer').classList.remove('hidden');
       document.getElementById('benchAreaHeadline').textContent =
         `🔥 ${data.areaName} — 벤치마킹 타겟 TOP ${data.targets.length}곳 (후기 많은 순)`;
@@ -1355,6 +1740,7 @@
       grid.innerHTML = '';
 
       (data.targets || []).forEach((t, idx) => {
+        const isLocked = !isProUser() && idx >= 1;
         const photosHtml = (t.samplePhotos && t.samplePhotos.length > 0 ? t.samplePhotos : [t.thumbnailUrl]).filter(Boolean).slice(0, 3).map(url =>
           `<img src="${url}" class="w-24 h-20 sm:w-28 sm:h-24 rounded-xl object-cover border border-slate-200 bg-slate-100 flex-shrink-0" />`
         ).join('');
@@ -1372,92 +1758,105 @@
         ).join(' ');
 
         const card = document.createElement('div');
-        card.className = 'card p-5 sm:p-6 border-2 border-slate-200 hover:border-rose-400 transition space-y-4';
+        card.className = 'relative card p-5 sm:p-6 border-2 border-slate-200 hover:border-rose-400 transition overflow-hidden';
         card.innerHTML = `
-          <!-- 상단: 순위, 제목, 후기 수, 사진 미리보기 -->
-          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div class="space-y-1.5">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-xs font-black">타겟 #${idx + 1}</span>
-                <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-extrabold">🔥 후기 ${t.ratingCount}개 (평점 ★${t.ratingAverage})</span>
-                ${t.isSuperhost ? '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">🏅 슈퍼호스트/인기</span>' : ''}
-                <span class="text-xs text-slate-500 font-semibold">거리 ${t.distanceM}m · 호스트 ${t.hostName}</span>
+          <div class="${isLocked ? 'blur-[6px] select-none pointer-events-none' : ''} space-y-4">
+            <!-- 상단: 순위, 제목, 후기 수, 사진 미리보기 -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+              <div class="space-y-1.5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-xs font-black">타겟 #${idx + 1}</span>
+                  <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-extrabold">🔥 후기 ${t.ratingCount}개 (평점 ★${t.ratingAverage})</span>
+                  ${t.isSuperhost ? '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">🏅 슈퍼호스트/인기</span>' : ''}
+                  <span class="text-xs text-slate-500 font-semibold">거리 ${t.distanceM}m · 호스트 ${t.hostName}</span>
+                </div>
+                <h4 class="text-base sm:text-lg font-black text-slate-900">${t.name}</h4>
+                <p class="text-xs text-slate-500">${t.specs} · 총 사진 ${t.photoCount || 15}장 ${t.portraitPhotoCount ? `(세로형 폰카 비율 ${t.portraitPhotoCount}장)` : ''}</p>
               </div>
-              <h4 class="text-base sm:text-lg font-black text-slate-900">${t.name}</h4>
-              <p class="text-xs text-slate-500">${t.specs} · 총 사진 ${t.photoCount || 15}장 ${t.portraitPhotoCount ? `(세로형 폰카 비율 ${t.portraitPhotoCount}장)` : ''}</p>
+              <div class="flex items-center gap-2 overflow-x-auto">
+                ${photosHtml}
+              </div>
             </div>
-            <div class="flex items-center gap-2 overflow-x-auto">
-              ${photosHtml}
+
+            <!-- 중단 1: 왜 이 집이 만만한 먹잇감인가? (4단계 & 5단계: 사진 약점 + 어메니티 + 체크인 동선) -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+              <div class="md:col-span-7 space-y-2.5">
+                <div class="text-xs font-extrabold text-slate-500">STEP 4 & 5 · 사진 약점 및 어메니티·체크인 동선 해부</div>
+                <div>${weaknessBadges}</div>
+                <div class="flex flex-wrap gap-1.5">${presentAmenHtml} ${missingAmenHtml}</div>
+                ${t.checkinDescription ? `
+                  <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
+                    <strong class="text-slate-900">🚪 이 집의 체크인·홍보 동선:</strong> ${t.checkinDescription}
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- 중단 2: 6단계~8단계 (-5,000원 언더컷 & 월 순수익 200 시뮬레이션) -->
+              <div class="md:col-span-5 p-4 rounded-2xl bg-rose-50/70 border border-rose-200 flex flex-col justify-between space-y-3">
+                <div>
+                  <div class="text-xs font-extrabold text-rose-700 mb-2">STEP 6 ~ 8 · 5,000원 언더컷 & 월 순수익 계산</div>
+                  <div class="space-y-1.5 text-xs">
+                    <div class="flex justify-between">
+                      <span class="text-slate-600">이 집의 한 달 예약 패턴</span>
+                      <span class="font-bold text-slate-900">${t.bookingPatternText || '2~3박 단기 회전형'} (11월 ${t.bookedDays}박 예약 / ${t.occupancyRate}%)</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-slate-600">이 집의 현재 2인 판매가</span>
+                      <span class="font-bold text-slate-700">${formatKRW(t.targetPrice2p)}/박 (4인 ${formatKRW(t.targetPrice4p)})</span>
+                    </div>
+                    <div class="flex justify-between pt-1.5 border-t border-rose-200/80">
+                      <span class="font-extrabold text-rose-700">👉 내 숙소 공략 요금 (-₩5,000)</span>
+                      <span class="font-black text-rose-600 text-sm">${formatKRW(t.myUndercutPrice2p)}/박</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-white border border-rose-200">
+                  <div class="flex items-baseline justify-between">
+                    <span class="text-xs font-extrabold text-slate-700">예상 월 순수익 (월 ${t.estimatedBookedNights}박 가동 시)</span>
+                    <span class="text-lg font-black text-emerald-600">+${formatKRW(t.estimatedMonthlyNetProfit)}</span>
+                  </div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">
+                    월 총매출 ${formatKRW(t.estimatedMonthlyGross)} - 예상 월세·공과금·청소비(₩1,150,000) 차감 기준
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 하단 버튼 -->
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+              <span class="text-xs text-slate-500">💡 <strong>STEP 9:</strong> 이 가격으로 첫 달 후기 15개를 먼저 뺏어온 뒤, 사진 재촬영 후 슈퍼호스트를 달면 게임 끝!</span>
+              <div class="flex items-center gap-2">
+                <button
+                  onclick="openCompDetailModal('${t.listingId}')"
+                  class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-extrabold text-xs transition"
+                >
+                  🔍 이 집의 날짜별 판매가 & 내 집과 1:1 비교표 열기
+                </button>
+                <a href="${t.url}" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                  에어비앤비 사진 직접 보기 ↗
+                </a>
+              </div>
             </div>
           </div>
-
-          <!-- 중단 1: 왜 이 집이 만만한 먹잇감인가? (4단계 & 5단계: 사진 약점 + 어메니티 + 체크인 동선) -->
-          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <div class="md:col-span-7 space-y-2.5">
-              <div class="text-xs font-extrabold text-slate-500">STEP 4 & 5 · 사진 약점 및 어메니티·체크인 동선 해부</div>
-              <div>${weaknessBadges}</div>
-              <div class="flex flex-wrap gap-1.5">${presentAmenHtml} ${missingAmenHtml}</div>
-              ${t.checkinDescription ? `
-                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
-                  <strong class="text-slate-900">🚪 이 집의 체크인·홍보 동선:</strong> ${t.checkinDescription}
-                </div>
-              ` : ''}
-            </div>
-
-            <!-- 중단 2: 6단계~8단계 (-5,000원 언더컷 & 월 순수익 200 시뮬레이션) -->
-            <div class="md:col-span-5 p-4 rounded-2xl bg-rose-50/70 border border-rose-200 flex flex-col justify-between space-y-3">
-              <div>
-                <div class="text-xs font-extrabold text-rose-700 mb-2">STEP 6 ~ 8 · 5,000원 언더컷 & 월 순수익 계산</div>
-                <div class="space-y-1.5 text-xs">
-                  <div class="flex justify-between">
-                    <span class="text-slate-600">이 집의 한 달 예약 패턴</span>
-                    <span class="font-bold text-slate-900">${t.bookingPatternText || '2~3박 단기 회전형'} (11월 ${t.bookedDays}박 예약 / ${t.occupancyRate}%)</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-600">이 집의 현재 2인 판매가</span>
-                    <span class="font-bold text-slate-700">${formatKRW(t.targetPrice2p)}/박 (4인 ${formatKRW(t.targetPrice4p)})</span>
-                  </div>
-                  <div class="flex justify-between pt-1.5 border-t border-rose-200/80">
-                    <span class="font-extrabold text-rose-700">👉 내 숙소 공략 요금 (-₩5,000)</span>
-                    <span class="font-black text-rose-600 text-sm">${formatKRW(t.myUndercutPrice2p)}/박</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="p-3 rounded-xl bg-white border border-rose-200">
-                <div class="flex items-baseline justify-between">
-                  <span class="text-xs font-extrabold text-slate-700">예상 월 순수익 (월 ${t.estimatedBookedNights}박 가동 시)</span>
-                  <span class="text-lg font-black text-emerald-600">+${formatKRW(t.estimatedMonthlyNetProfit)}</span>
-                </div>
-                <div class="text-[11px] text-slate-400 mt-0.5">
-                  월 총매출 ${formatKRW(t.estimatedMonthlyGross)} - 예상 월세·공과금·청소비(₩1,150,000) 차감 기준
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 하단 버튼 -->
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
-            <span class="text-xs text-slate-500">💡 <strong>STEP 9:</strong> 이 가격으로 첫 달 후기 15개를 먼저 뺏어온 뒤, 사진 재촬영 후 슈퍼호스트를 달면 게임 끝!</span>
-            <div class="flex items-center gap-2">
-              <button
-                onclick="openCompDetailModal('${t.listingId}')"
-                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-extrabold text-xs transition"
-              >
-                🔍 이 집의 날짜별 판매가 & 내 집과 1:1 비교표 열기
+          ${isLocked ? `
+            <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-[2px] flex flex-col items-center justify-center p-6 text-center">
+              <span class="px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs font-black mb-2">🔒 월 순수익 200 핵심 먹잇감 타겟 #${idx + 1} (후기 ${t.ratingCount}개 · ★${t.ratingAverage})</span>
+              <h5 class="text-white font-black text-sm sm:text-base mb-1">이 숙소의 사진 약점 · 어메니티 빈틈 · -₩5,000 언더컷 순수익(${formatKRW(t.estimatedMonthlyNetProfit)})은 PRO 전용입니다</h5>
+              <p class="text-slate-200 text-xs mb-3">무료 체험에서는 1위 타겟만 공개됩니다. PRO 로그인(테스트: host / 1900) 시 TOP 10 전체가 즉시 해제됩니다.</p>
+              <button onclick="openAuthModal('login', '🔒 <strong>벤치마킹 타겟 TOP 2~10위 상세 분석은 월 1,900원 PRO 회원 전용입니다.</strong><br/>로그인(테스트 계정: <code>host / 1900</code>) 시 모든 타겟의 약점과 언더컷 요금이 공개됩니다.')" class="px-5 py-2.5 rounded-xl airbnb-btn text-white font-black text-xs sm:text-sm shadow-xl">
+                🔐 PRO 로그인하고 TOP 10 전체 잠금 해제 →
               </button>
-              <a href="${t.url}" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
-                에어비앤비 사진 직접 보기 ↗
-              </a>
             </div>
-          </div>
+          ` : ''}
         `;
         grid.appendChild(card);
       });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      runAnalysis();
+      updateAuthHeaderUI();
+      runAnalysis(true);
     });
   </script>
 </body>
