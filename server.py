@@ -1542,25 +1542,22 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
             return
 
         if parsed.path == "/api/admin/users":
-            users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
-            users_db = {}
-            if os.path.exists(users_file):
-                try:
-                    with open(users_file, "r", encoding="utf-8") as uf:
-                        users_db = json.load(uf)
-                except Exception:
-                    pass
+            users_db = self._load_users_db()
             user_list = [
                 {
                     "username": k,
                     "password": v.get("pw", ""),
                     "name": v.get("name", k),
-                    "plan": v.get("plan", "PRO (월 1,900원)"),
+                    "role": v.get("role", "ADMIN" if k in ("admin", "ttmacrash") else "PRO"),
+                    "plan": "MASTER ADMIN" if v.get("role") == "ADMIN" else v.get("plan", "PRO (월 1,900원)"),
                     "active": v.get("active", True),
                     "createdAt": v.get("createdAt", "2026-11-02"),
                 }
                 for k, v in users_db.items()
+                if not k.startswith("_")
             ]
+            # Sort ADMIN accounts first, then by createdAt/username
+            user_list.sort(key=lambda x: (0 if x["role"] == "ADMIN" else 1, x["username"]))
             body = json.dumps({"ok": True, "users": user_list}, ensure_ascii=False).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1572,6 +1569,50 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
 
         return super().do_GET()
 
+    def _users_file_path(self):
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
+
+    def _load_users_db(self):
+        users_file = self._users_file_path()
+        users_db = {}
+        if os.path.exists(users_file):
+            try:
+                with open(users_file, "r", encoding="utf-8") as uf:
+                    users_db = json.load(uf)
+            except Exception:
+                users_db = {}
+        if not users_db.get("_initialized_v2"):
+            # 최초 1회: 기본 어드민 계정도 회원 DB에 통합 등록하여 수정·비밀번호 변경·삭제·등급 관리가 가능하도록 구성
+            if "admin" not in users_db:
+                users_db["admin"] = {
+                    "pw": "AirAuto!2026",
+                    "name": "총괄 어드민",
+                    "role": "ADMIN",
+                    "plan": "MASTER ADMIN",
+                    "active": True,
+                    "createdAt": "2026-11-02",
+                }
+            if "ttmacrash" not in users_db:
+                users_db["ttmacrash"] = {
+                    "pw": "AirAuto!2026",
+                    "name": "호스트님 (총괄 어드민)",
+                    "role": "ADMIN",
+                    "plan": "MASTER ADMIN",
+                    "active": True,
+                    "createdAt": "2026-11-02",
+                }
+            for k, v in list(users_db.items()):
+                if not k.startswith("_") and isinstance(v, dict) and "role" not in v:
+                    v["role"] = "ADMIN" if k in ("admin", "ttmacrash") else "PRO"
+            users_db["_initialized_v2"] = True
+            self._save_users_db(users_db)
+        return users_db
+
+    def _save_users_db(self, users_db):
+        users_file = self._users_file_path()
+        with open(users_file, "w", encoding="utf-8") as uf:
+            json.dump(users_db, uf, ensure_ascii=False, indent=2)
+
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path == "/api/login":
@@ -1582,60 +1623,29 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                 uid = (payload.get("username") or "").strip().lower()
                 upw = (payload.get("password") or "").strip()
 
-                # 마스터 어드민 계정 확인 (절대 외부 화면에 노출되지 않음)
-                admin_accounts = {
-                    "ttmacrash": {"pw": "AirAuto!2026", "name": "총괄 어드민 (호스트님)", "plan": "MASTER ADMIN"},
-                    "admin": {"pw": "AirAuto!2026", "name": "총괄 어드민", "plan": "MASTER ADMIN"},
-                }
-                if uid in admin_accounts and admin_accounts[uid]["pw"] == upw:
-                    resp_body = json.dumps(
-                        {
-                            "ok": True,
-                            "user": {
-                                "username": uid,
-                                "name": admin_accounts[uid]["name"],
-                                "plan": admin_accounts[uid]["plan"],
-                                "isPro": True,
-                                "isAdmin": True,
-                            },
-                        },
-                        ensure_ascii=False,
-                    ).encode("utf-8")
-                    self.send_response(200)
-                    self.send_header("Content-Type", "application/json; charset=utf-8")
-                    self.send_header("Access-Control-Allow-Origin", "*")
-                    self.send_header("Content-Length", str(len(resp_body)))
-                    self.end_headers()
-                    self.wfile.write(resp_body)
-                    return
+                users_db = self._load_users_db()
+                u = users_db.get(uid) if not uid.startswith("_") else None
 
-                # 어드민이 발급한 일반 과금 회원(users.json) 확인
-                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
-                users_db = {}
-                if os.path.exists(users_file):
-                    try:
-                        with open(users_file, "r", encoding="utf-8") as uf:
-                            users_db = json.load(uf)
-                    except Exception:
-                        pass
-
-                if uid in users_db and users_db[uid].get("pw") == upw:
-                    if not users_db[uid].get("active", True):
+                if u and u.get("pw") == upw:
+                    if not u.get("active", True):
                         resp_body = json.dumps(
-                            {"ok": False, "error": "이용 기간이 만료되었거나 정지된 계정입니다. 관리자에게 문의해 주세요."},
+                            {"ok": False, "error": "이용 기간이 만료되었거나 일시정지된 계정입니다. 관리자에게 문의해 주세요."},
                             ensure_ascii=False,
                         ).encode("utf-8")
                         self.send_response(403)
                     else:
+                        role = u.get("role", "PRO")
+                        is_admin = role == "ADMIN"
                         resp_body = json.dumps(
                             {
                                 "ok": True,
                                 "user": {
                                     "username": uid,
-                                    "name": users_db[uid].get("name", uid),
-                                    "plan": users_db[uid].get("plan", "PRO (월 1,900원 구독)"),
+                                    "name": u.get("name", uid),
+                                    "role": role,
+                                    "plan": "MASTER ADMIN" if is_admin else u.get("plan", "PRO (월 1,900원 구독)"),
                                     "isPro": True,
-                                    "isAdmin": False,
+                                    "isAdmin": is_admin,
                                 },
                             },
                             ensure_ascii=False,
@@ -1643,7 +1653,7 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                         self.send_response(200)
                 else:
                     resp_body = json.dumps(
-                        {"ok": False, "error": "아이디 또는 비밀번호가 일치하지 않습니다. 발급받은 PRO 계정 정보를 확인해 주세요."},
+                        {"ok": False, "error": "아이디 또는 비밀번호가 일치하지 않습니다. 계정 정보를 확인해 주세요."},
                         ensure_ascii=False,
                     ).encode("utf-8")
                     self.send_response(401)
@@ -1662,7 +1672,7 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                 self.wfile.write(resp_body)
             return
 
-        if parsed.path == "/api/admin/create-user":
+        if parsed.path in ("/api/admin/create-user", "/api/admin/update-user"):
             length = int(self.headers.get("Content-Length", 0))
             raw_body = self.rfile.read(length).decode("utf-8") if length else "{}"
             try:
@@ -1670,26 +1680,33 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
                 uid = (payload.get("username") or "").strip().lower()
                 upw = (payload.get("password") or "").strip()
                 uname = (payload.get("name") or uid).strip()
-                uplan = (payload.get("plan") or "PRO (월 1,900원 구독)").strip()
-                if not uid or not upw:
-                    raise ValueError("발급할 아이디와 비밀번호를 모두 입력해 주세요.")
-                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
-                users_db = {}
-                if os.path.exists(users_file):
-                    try:
-                        with open(users_file, "r", encoding="utf-8") as uf:
-                            users_db = json.load(uf)
-                    except Exception:
-                        pass
+                urole = (payload.get("role") or "PRO").strip().upper()
+                if urole not in ("ADMIN", "PRO"):
+                    urole = "PRO"
+                if not uid or uid.startswith("_") or not upw:
+                    raise ValueError("아이디와 비밀번호를 모두 입력해 주세요.")
+
+                users_db = self._load_users_db()
+                existing = users_db.get(uid, {})
+
+                # 마지막 남은 ADMIN 계정을 PRO로 강등하려는 경우 방어
+                if existing.get("role") == "ADMIN" and urole != "ADMIN":
+                    admin_count = sum(
+                        1 for k, v in users_db.items()
+                        if not k.startswith("_") and isinstance(v, dict) and v.get("role") == "ADMIN" and v.get("active", True)
+                    )
+                    if admin_count <= 1:
+                        raise ValueError("최소 1개 이상의 활성 어드민(ADMIN) 계정은 유지되어야 합니다.")
+
                 users_db[uid] = {
                     "pw": upw,
                     "name": uname,
-                    "plan": uplan,
-                    "active": True,
-                    "createdAt": datetime.date.today().isoformat(),
+                    "role": urole,
+                    "plan": "MASTER ADMIN" if urole == "ADMIN" else (payload.get("plan") or existing.get("plan") or "PRO (월 1,900원 구독)"),
+                    "active": payload.get("active", existing.get("active", True)),
+                    "createdAt": existing.get("createdAt") or datetime.date.today().isoformat(),
                 }
-                with open(users_file, "w", encoding="utf-8") as uf:
-                    json.dump(users_db, uf, ensure_ascii=False, indent=2)
+                self._save_users_db(users_db)
                 resp_body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1713,15 +1730,18 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
             try:
                 payload = json.loads(raw_body)
                 uid = (payload.get("username") or "").strip().lower()
-                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
-                users_db = {}
-                if os.path.exists(users_file):
-                    with open(users_file, "r", encoding="utf-8") as uf:
-                        users_db = json.load(uf)
-                if uid in users_db:
-                    users_db[uid]["active"] = not users_db[uid].get("active", True)
-                    with open(users_file, "w", encoding="utf-8") as uf:
-                        json.dump(users_db, uf, ensure_ascii=False, indent=2)
+                users_db = self._load_users_db()
+                if uid in users_db and not uid.startswith("_"):
+                    cur_active = users_db[uid].get("active", True)
+                    if cur_active and users_db[uid].get("role") == "ADMIN":
+                        admin_count = sum(
+                            1 for k, v in users_db.items()
+                            if not k.startswith("_") and isinstance(v, dict) and v.get("role") == "ADMIN" and v.get("active", True)
+                        )
+                        if admin_count <= 1:
+                            raise ValueError("최소 1개 이상의 활성 어드민(ADMIN) 계정은 유지되어야 합니다.")
+                    users_db[uid]["active"] = not cur_active
+                    self._save_users_db(users_db)
                 resp_body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -1745,15 +1765,17 @@ class AirAutoHandler(SimpleHTTPRequestHandler):
             try:
                 payload = json.loads(raw_body)
                 uid = (payload.get("username") or "").strip().lower()
-                users_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "users.json")
-                users_db = {}
-                if os.path.exists(users_file):
-                    with open(users_file, "r", encoding="utf-8") as uf:
-                        users_db = json.load(uf)
-                if uid in users_db:
+                users_db = self._load_users_db()
+                if uid in users_db and not uid.startswith("_"):
+                    if users_db[uid].get("role") == "ADMIN":
+                        admin_count = sum(
+                            1 for k, v in users_db.items()
+                            if not k.startswith("_") and isinstance(v, dict) and v.get("role") == "ADMIN"
+                        )
+                        if admin_count <= 1:
+                            raise ValueError("최소 1개 이상의 어드민(ADMIN) 계정은 남겨두어야 합니다.")
                     del users_db[uid]
-                    with open(users_file, "w", encoding="utf-8") as uf:
-                        json.dump(users_db, uf, ensure_ascii=False, indent=2)
+                    self._save_users_db(users_db)
                 resp_body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")

@@ -736,64 +736,77 @@
     </div>
   </div>
 
-  <!-- 🛠️ 어드민(Admin) 전용: 과금 회원 ID/PW 발급 및 계정 관리 모달 -->
+  <!-- 🛠️ 어드민(Admin) 전용: 전체 회원(ADMIN·PRO 등급) ID/PW 발급·비밀번호 변경·수정·삭제 모달 -->
   <div id="adminModal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 my-auto max-h-[92vh] flex flex-col">
+    <div class="bg-white rounded-3xl max-w-4xl w-full p-5 sm:p-7 shadow-2xl border border-slate-200 my-auto max-h-[92vh] flex flex-col">
       <div class="flex items-start justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-xs font-black">🛠️ MASTER ADMIN 전용</span>
-          <h3 class="text-lg sm:text-xl font-black text-slate-900 mt-1">과금 회원(PRO) 아이디·비밀번호 발급 및 관리</h3>
-          <p class="text-xs text-slate-500 mt-0.5">결제가 완료된 고객에게 발급할 전용 ID/PW를 생성하고, 만료된 계정을 일시정지하거나 삭제합니다.</p>
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-xs font-black">🛠️ 통합 회원·어드민 등급 관리</span>
+          <h3 class="text-lg sm:text-xl font-black text-slate-900 mt-1">어드민(ADMIN) & 과금 회원(PRO) 통합 발급 · 비밀번호 변경 · 삭제</h3>
+          <p class="text-xs text-slate-500 mt-0.5">어드민 계정을 포함한 모든 계정의 <strong>등급(ADMIN/PRO), 비밀번호, 이름/메모</strong>를 직접 수정하거나 삭제할 수 있습니다.</p>
         </div>
         <button onclick="closeAdminModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg flex-shrink-0">✕</button>
       </div>
 
       <div class="overflow-y-auto flex-1 space-y-6 py-5 pr-1">
-        <!-- 1. 신규 회원 ID/PW 발급 폼 -->
+        <!-- 1. 신규 계정 발급 및 기존 계정 수정 폼 -->
         <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3.5">
-          <div class="font-extrabold text-sm text-slate-900">➕ 신규 과금 회원 ID / PW 발급하기</div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">발급할 아이디 (ID)</label>
+          <div class="flex items-center justify-between">
+            <div id="adminFormTitle" class="font-extrabold text-sm text-slate-900">➕ 신규 계정 발급 (또는 기존 아이디 입력 시 덮어쓰기 수정)</div>
+            <button id="adminFormResetBtn" onclick="resetAdminForm()" class="hidden px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs">
+              신규 발급 모드로 전환 ↺
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <div class="sm:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">회원 등급 (Role)</label>
+              <select id="adminNewRole" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm font-extrabold text-slate-900 focus:outline-none focus:border-rose-500">
+                <option value="PRO">👑 PRO 과금회원</option>
+                <option value="ADMIN">🛠️ ADMIN (어드민)</option>
+              </select>
+            </div>
+            <div class="sm:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">아이디 (ID)</label>
               <input id="adminNewUid" type="text" placeholder="예: host01" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm font-bold focus:outline-none focus:border-rose-500" />
             </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">발급할 비밀번호 (PW)</label>
+            <div class="sm:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">비밀번호 (변경 가능)</label>
               <div class="flex gap-1.5">
                 <input id="adminNewUpw" type="text" placeholder="비밀번호 입력" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm font-bold focus:outline-none focus:border-rose-500" />
                 <button onclick="generateRandomPassword()" class="px-2.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold text-xs whitespace-nowrap" title="랜덤 비밀번호 생성">
-                  🎲 자동생성
+                  🎲 생성
                 </button>
               </div>
             </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-600 mb-1">고객명 / 숙소 수 메모</label>
+            <div class="sm:col-span-3">
+              <label class="block text-[11px] font-bold text-slate-600 mb-1">이름 / 숙소 메모</label>
               <input id="adminNewName" type="text" placeholder="예: 김호스트 (2개 숙소)" class="w-full px-3 py-2 rounded-xl bg-white border border-slate-300 text-xs sm:text-sm focus:outline-none focus:border-rose-500" />
             </div>
           </div>
           <div class="flex items-center justify-between pt-1">
             <span id="adminCreateMsg" class="text-xs font-bold text-emerald-600"></span>
-            <button onclick="adminCreateUser()" class="px-5 py-2.5 rounded-xl airbnb-btn text-white font-black text-xs sm:text-sm shadow">
-              ➕ 이 계정 발급 및 저장하기
+            <button id="adminSubmitBtn" onclick="adminCreateUser()" class="px-5 py-2.5 rounded-xl airbnb-btn text-white font-black text-xs sm:text-sm shadow whitespace-nowrap">
+              ➕ 계정 발급 / 저장하기
             </button>
           </div>
         </div>
 
-        <!-- 2. 현재 발급된 회원 목록 -->
+        <!-- 2. 전체 회원 목록 (어드민 + PRO 과금회원 통합 표, 표 안에서 즉시 비밀번호/등급 변경 가능) -->
         <div>
-          <div class="flex items-center justify-between mb-2.5">
-            <h4 class="font-extrabold text-sm text-slate-900">📋 발급된 PRO 과금 회원 목록</h4>
-            <span class="text-xs text-slate-500">우측 <strong>[카톡 안내문 복사]</strong>를 눌러 고객에게 바로 전달하세요</span>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2.5">
+            <h4 class="font-extrabold text-sm text-slate-900">📋 전체 계정 목록 (어드민 & PRO 회원 통합 관리)</h4>
+            <span class="text-xs text-slate-500">표 안에서 <strong>등급·비밀번호·메모를 직접 바꾸고 [💾 저장]</strong>을 누르면 즉시 반영됩니다.</span>
           </div>
           <div class="overflow-x-auto rounded-2xl border border-slate-200">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
-                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                <tr class="bg-slate-100 text-slate-600 border-b border-slate-200 whitespace-nowrap">
+                  <th class="py-2.5 px-3 font-bold">등급 (Role)</th>
                   <th class="py-2.5 px-3 font-bold">아이디 (ID)</th>
-                  <th class="py-2.5 px-3 font-bold">비밀번호 (PW)</th>
-                  <th class="py-2.5 px-3 font-bold">고객명 / 메모</th>
+                  <th class="py-2.5 px-3 font-bold">비밀번호 (직접 수정 가능)</th>
+                  <th class="py-2.5 px-3 font-bold">이름 / 메모</th>
                   <th class="py-2.5 px-3 font-bold">상태</th>
-                  <th class="py-2.5 px-3 font-bold text-right">관리 / 카톡 전달</th>
+                  <th class="py-2.5 px-3 font-bold text-right">수정저장 / 카톡복사 / 삭제</th>
                 </tr>
               </thead>
               <tbody id="adminUsersTableBody" class="divide-y divide-slate-100">
@@ -929,6 +942,20 @@
       }
     }
 
+    function getLocalUsersStore() {
+      try {
+        const raw = localStorage.getItem('airauto_issued_users');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return {};
+    }
+
+    function saveLocalUsersStore(store) {
+      try {
+        localStorage.setItem('airauto_issued_users', JSON.stringify(store));
+      } catch (e) {}
+    }
+
     async function submitLogin() {
       const uid = document.getElementById('loginUsernameInput').value.trim().toLowerCase();
       const upw = document.getElementById('loginPasswordInput').value.trim();
@@ -943,49 +970,61 @@
 
       let authenticatedUser = null;
       let serverError = null;
+      let serverResponded = false;
       try {
         const res = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: uid, password: upw })
         });
+        serverResponded = true;
         const json = await res.json();
         if (json.ok && json.user) authenticatedUser = json.user;
         else if (json.error) serverError = json.error;
       } catch (e) {}
 
-      // Fallback for GitHub Pages serverless mode (SHA-256 hash verification for admin + admin-issued users)
-      if (!authenticatedUser) {
-        const pwHash = await sha256Hex(upw);
-        if ((uid === 'ttmacrash' || uid === 'admin') && pwHash === ADMIN_PW_SHA256) {
-          authenticatedUser = {
-            username: uid,
-            name: '총괄 어드민 (호스트님)',
-            plan: 'MASTER ADMIN',
-            isPro: true,
-            isAdmin: true
-          };
-        } else {
-          const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
-          if (localUsers[uid] && localUsers[uid].pw === upw) {
+      // Fallback for GitHub Pages serverless mode (checks localUsers first so password/grade changes work on static hosting too!)
+      if (!authenticatedUser && !serverResponded) {
+        const localUsers = getLocalUsersStore();
+        if (localUsers[uid]) {
+          if (localUsers[uid].deleted) {
+            errBox.textContent = '삭제된 계정입니다.';
+            errBox.classList.remove('hidden');
+            return;
+          }
+          if (localUsers[uid].pw === upw) {
             if (localUsers[uid].active === false) {
-              errBox.textContent = '이용 기간이 만료되었거나 정지된 계정입니다. 관리자에게 문의해 주세요.';
+              errBox.textContent = '이용 기간이 만료되었거나 일시정지된 계정입니다. 관리자에게 문의해 주세요.';
               errBox.classList.remove('hidden');
               return;
             }
+            const uRole = localUsers[uid].role || ((uid === 'admin' || uid === 'ttmacrash') ? 'ADMIN' : 'PRO');
             authenticatedUser = {
               username: uid,
               name: localUsers[uid].name || uid,
-              plan: localUsers[uid].plan || 'PRO (월 1,900원 구독)',
+              role: uRole,
+              plan: uRole === 'ADMIN' ? 'MASTER ADMIN' : (localUsers[uid].plan || 'PRO (월 1,900원 구독)'),
               isPro: true,
-              isAdmin: false
+              isAdmin: uRole === 'ADMIN'
+            };
+          }
+        } else {
+          const pwHash = await sha256Hex(upw);
+          if ((uid === 'ttmacrash' || uid === 'admin') && pwHash === ADMIN_PW_SHA256) {
+            authenticatedUser = {
+              username: uid,
+              name: uid === 'ttmacrash' ? '호스트님 (총괄 어드민)' : '총괄 어드민',
+              role: 'ADMIN',
+              plan: 'MASTER ADMIN',
+              isPro: true,
+              isAdmin: true
             };
           }
         }
       }
 
       if (!authenticatedUser) {
-        errBox.textContent = serverError || '아이디 또는 비밀번호가 일치하지 않습니다. 관리자에게 발급받은 계정을 확인해 주세요.';
+        errBox.textContent = serverError || '아이디 또는 비밀번호가 일치하지 않습니다. 계정 정보를 확인해 주세요.';
         errBox.classList.remove('hidden');
         return;
       }
@@ -1011,7 +1050,7 @@
       if (currentBenchmarkData) renderBenchmarkTargets(currentBenchmarkData);
     }
 
-    // ==================== 🛠️ 어드민 전용: 회원 ID/PW 발급·관리 함수 ====================
+    // ==================== 🛠️ 어드민 전용: 통합 회원(ADMIN·PRO 등급) 발급·비번변경·수정·삭제 ====================
     function generateRandomPassword() {
       const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
       let out = 'pro';
@@ -1021,10 +1060,38 @@
       document.getElementById('adminNewUpw').value = out;
     }
 
+    function resetAdminForm() {
+      document.getElementById('adminFormTitle').textContent = '➕ 신규 계정 발급 (또는 기존 아이디 입력 시 덮어쓰기 수정)';
+      document.getElementById('adminFormResetBtn').classList.add('hidden');
+      document.getElementById('adminNewRole').value = 'PRO';
+      const uidInput = document.getElementById('adminNewUid');
+      uidInput.value = '';
+      uidInput.readOnly = false;
+      uidInput.classList.remove('bg-slate-100');
+      document.getElementById('adminNewUpw').value = '';
+      document.getElementById('adminNewName').value = '';
+      document.getElementById('adminSubmitBtn').textContent = '➕ 계정 발급 / 저장하기';
+    }
+
+    function fillAdminEditForm(uid, upw, name, role) {
+      document.getElementById('adminFormTitle').textContent = `✏️ [${uid}] 계정 정보 · 비밀번호 · 등급 수정 중`;
+      document.getElementById('adminFormResetBtn').classList.remove('hidden');
+      document.getElementById('adminNewRole').value = role === 'ADMIN' ? 'ADMIN' : 'PRO';
+      const uidInput = document.getElementById('adminNewUid');
+      uidInput.value = uid;
+      uidInput.readOnly = true;
+      uidInput.classList.add('bg-slate-100');
+      document.getElementById('adminNewUpw').value = upw;
+      document.getElementById('adminNewName').value = name;
+      document.getElementById('adminSubmitBtn').textContent = `💾 [${uid}] 수정사항 저장하기`;
+      document.getElementById('adminNewUpw').focus();
+    }
+
     async function openAdminModal() {
       if (!isAdminUser()) return;
       document.getElementById('adminModal').classList.remove('hidden');
       document.getElementById('adminCreateMsg').textContent = '';
+      resetAdminForm();
       await loadAdminUsersList();
     }
 
@@ -1034,58 +1101,95 @@
 
     async function loadAdminUsersList() {
       let users = [];
+      let fetchedFromServer = false;
       try {
         const res = await fetch('/api/admin/users');
         if (res.ok) {
           const json = await res.json();
-          if (json.ok && json.users) users = json.users;
+          if (json.ok && json.users) {
+            users = json.users;
+            fetchedFromServer = true;
+          }
         }
       } catch (e) {}
 
-      // Merge with localStorage issued users (for GitHub Pages static mode)
-      try {
-        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
-        const existingIds = new Set(users.map(u => u.username));
+      // GitHub Pages 등 정적 환경일 때는 localStorage에 기본 어드민(admin, ttmacrash)을 포함한 전체 목록 구성
+      if (!fetchedFromServer) {
+        const localUsers = getLocalUsersStore();
+        if (!localUsers._seeded_v2) {
+          if (!localUsers.admin) {
+            localUsers.admin = { pw: 'AirAuto!2026', name: '총괄 어드민', role: 'ADMIN', plan: 'MASTER ADMIN', active: true, createdAt: '2026-11-02' };
+          }
+          if (!localUsers.ttmacrash) {
+            localUsers.ttmacrash = { pw: 'AirAuto!2026', name: '호스트님 (총괄 어드민)', role: 'ADMIN', plan: 'MASTER ADMIN', active: true, createdAt: '2026-11-02' };
+          }
+          localUsers._seeded_v2 = true;
+          saveLocalUsersStore(localUsers);
+        }
         Object.entries(localUsers).forEach(([k, v]) => {
-          if (!existingIds.has(k)) {
+          if (!k.startsWith('_') && v && !v.deleted) {
             users.push({
               username: k,
-              password: v.pw,
+              password: v.pw || '',
               name: v.name || k,
+              role: v.role || (k === 'admin' || k === 'ttmacrash' ? 'ADMIN' : 'PRO'),
               plan: v.plan || 'PRO (월 1,900원 구독)',
               active: v.active !== false,
               createdAt: v.createdAt || '2026-11-02'
             });
           }
         });
-      } catch (e) {}
+        users.sort((a, b) => (a.role === 'ADMIN' ? 0 : 1) - (b.role === 'ADMIN' ? 0 : 1) || a.username.localeCompare(b.username));
+      }
 
       const tbody = document.getElementById('adminUsersTableBody');
       tbody.innerHTML = '';
       if (users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 font-semibold">아직 발급된 일반 회원이 없습니다. 위 입력창에서 첫 회원 ID/PW를 발급해 보세요!</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 font-semibold">등록된 계정이 없습니다.</td></tr>`;
         return;
       }
 
       users.forEach(u => {
         const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50';
+        const isRowAdmin = u.role === 'ADMIN';
+        tr.className = isRowAdmin ? 'bg-amber-50/40 hover:bg-amber-50/80' : 'hover:bg-slate-50';
         const statusBadge = u.active
-          ? `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px]">이용중(활성)</span>`
-          : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-bold text-[11px]">일시정지(만료)</span>`;
+          ? `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px] whitespace-nowrap">이용중</span>`
+          : `<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 font-bold text-[11px] whitespace-nowrap">일시정지</span>`;
+
+        const safeUid = u.username.replace(/'/g, "\\'");
+        const safePw = (u.password || '').replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        const safeName = (u.name || '').replace(/"/g, '&quot;').replace(/'/g, "\\'");
+
         tr.innerHTML = `
-          <td class="py-3 px-3 font-black text-slate-900">${u.username}</td>
-          <td class="py-3 px-3"><code class="px-2 py-0.5 rounded bg-slate-100 text-rose-600 font-bold">${u.password}</code></td>
-          <td class="py-3 px-3 text-slate-700 font-semibold">${u.name}</td>
-          <td class="py-3 px-3">${statusBadge}</td>
-          <td class="py-3 px-3 text-right space-x-1 whitespace-nowrap">
-            <button onclick="copyCustomerInvite('${u.username}', '${u.password}', '${u.name}')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-[11px]">
-              📋 카톡 안내문 복사
+          <td class="py-2.5 px-3 whitespace-nowrap">
+            <select id="rowRole_${safeUid}" class="px-2 py-1 rounded-lg border text-xs font-extrabold ${isRowAdmin ? 'bg-amber-100 border-amber-300 text-amber-950' : 'bg-slate-100 border-slate-300 text-slate-800'}">
+              <option value="ADMIN" ${isRowAdmin ? 'selected' : ''}>🛠️ ADMIN (어드민)</option>
+              <option value="PRO" ${!isRowAdmin ? 'selected' : ''}>👑 PRO (과금회원)</option>
+            </select>
+          </td>
+          <td class="py-2.5 px-3 font-black text-slate-900 whitespace-nowrap">
+            ${u.username}
+            ${currentUser && currentUser.username === u.username ? '<span class="ml-1 px-1.5 py-0.2 rounded bg-emerald-600 text-white text-[10px] font-bold">현재접속</span>' : ''}
+          </td>
+          <td class="py-2.5 px-3 whitespace-nowrap">
+            <input id="rowPw_${safeUid}" type="text" value="${safePw}" class="w-32 px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-rose-600 font-extrabold text-xs focus:outline-none focus:border-rose-500" />
+          </td>
+          <td class="py-2.5 px-3 whitespace-nowrap">
+            <input id="rowName_${safeUid}" type="text" value="${safeName}" class="w-36 px-2.5 py-1 rounded-lg bg-white border border-slate-300 text-slate-700 font-semibold text-xs focus:outline-none focus:border-rose-500" />
+          </td>
+          <td class="py-2.5 px-3 whitespace-nowrap">${statusBadge}</td>
+          <td class="py-2.5 px-3 text-right space-x-1 whitespace-nowrap">
+            <button onclick="adminSaveRow('${safeUid}')" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px]">
+              💾 변경저장
             </button>
-            <button onclick="adminToggleUser('${u.username}')" class="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px]">
-              ${u.active ? '일시정지' : '다시활성화'}
+            <button onclick="copyCustomerInvite('${safeUid}')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-[11px]">
+              📋 카톡안내문
             </button>
-            <button onclick="adminDeleteUser('${u.username}')" class="px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-[11px]">
+            <button onclick="adminToggleUser('${safeUid}')" class="px-2 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[11px]">
+              ${u.active ? '정지' : '활성화'}
+            </button>
+            <button onclick="adminDeleteUser('${safeUid}')" class="px-2 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-[11px]">
               삭제
             </button>
           </td>
@@ -1095,74 +1199,168 @@
     }
 
     async function adminCreateUser() {
+      const role = document.getElementById('adminNewRole').value;
       const uid = document.getElementById('adminNewUid').value.trim().toLowerCase();
       const upw = document.getElementById('adminNewUpw').value.trim();
       const name = document.getElementById('adminNewName').value.trim() || uid;
       const msg = document.getElementById('adminCreateMsg');
 
       if (!uid || !upw) {
-        alert('발급할 아이디와 비밀번호를 모두 입력해 주세요.');
+        alert('아이디와 비밀번호를 모두 입력해 주세요.');
         return;
       }
 
+      let serverErr = null;
       try {
-        await fetch('/api/admin/create-user', {
+        const res = await fetch('/api/admin/create-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: uid, password: upw, name })
+          body: JSON.stringify({ username: uid, password: upw, name, role })
         });
+        const json = await res.json();
+        if (!json.ok && json.error) serverErr = json.error;
       } catch (e) {}
 
+      if (serverErr) {
+        alert(serverErr);
+        return;
+      }
+
+      const localUsers = getLocalUsersStore();
+      localUsers[uid] = {
+        pw: upw,
+        name,
+        role,
+        plan: role === 'ADMIN' ? 'MASTER ADMIN' : 'PRO (월 1,900원 구독)',
+        active: true,
+        createdAt: (localUsers[uid] && localUsers[uid].createdAt) || new Date().toISOString().slice(0, 10)
+      };
+      saveLocalUsersStore(localUsers);
+
+      resetAdminForm();
+      msg.textContent = `✅ [${uid}] (${role === 'ADMIN' ? '어드민' : 'PRO 과금회원'}) 계정이 저장되었습니다!`;
+      await loadAdminUsersList();
+    }
+
+    async function adminSaveRow(uid) {
+      const roleEl = document.getElementById(`rowRole_${uid}`);
+      const pwEl = document.getElementById(`rowPw_${uid}`);
+      const nameEl = document.getElementById(`rowName_${uid}`);
+      const msg = document.getElementById('adminCreateMsg');
+
+      const role = roleEl ? roleEl.value : 'PRO';
+      const upw = pwEl ? pwEl.value.trim() : '';
+      const name = nameEl ? nameEl.value.trim() : uid;
+
+      if (!upw) {
+        alert('비밀번호는 비워둘 수 없습니다.');
+        return;
+      }
+
+      let serverErr = null;
       try {
-        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
-        localUsers[uid] = { pw: upw, name, plan: 'PRO (월 1,900원 구독)', active: true, createdAt: new Date().toISOString().slice(0, 10) };
-        localStorage.setItem('airauto_issued_users', JSON.stringify(localUsers));
+        const res = await fetch('/api/admin/update-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: uid, password: upw, name, role })
+        });
+        const json = await res.json();
+        if (!json.ok && json.error) serverErr = json.error;
       } catch (e) {}
 
-      document.getElementById('adminNewUid').value = '';
-      document.getElementById('adminNewUpw').value = '';
-      document.getElementById('adminNewName').value = '';
-      msg.textContent = `✅ [${uid}] 계정이 발급되었습니다!`;
+      if (serverErr) {
+        alert(serverErr);
+        await loadAdminUsersList();
+        return;
+      }
+
+      const localUsers = getLocalUsersStore();
+      const prev = localUsers[uid] || {};
+      localUsers[uid] = {
+        ...prev,
+        pw: upw,
+        name,
+        role,
+        plan: role === 'ADMIN' ? 'MASTER ADMIN' : 'PRO (월 1,900원 구독)',
+        active: prev.active !== false
+      };
+      saveLocalUsersStore(localUsers);
+
+      // 만약 현재 로그인한 본인의 등급이나 이름을 수정했다면 헤더에도 반영
+      if (currentUser && currentUser.username === uid) {
+        currentUser.name = name;
+        currentUser.role = role;
+        currentUser.isAdmin = role === 'ADMIN';
+        try { localStorage.setItem('airauto_user', JSON.stringify(currentUser)); } catch (e) {}
+        updateAuthHeaderUI();
+      }
+
+      msg.textContent = `💾 [${uid}] 계정의 비밀번호·등급·메모 변경사항이 즉시 저장되었습니다!`;
       await loadAdminUsersList();
     }
 
     async function adminToggleUser(uid) {
+      let serverErr = null;
       try {
-        await fetch('/api/admin/toggle-user', {
+        const res = await fetch('/api/admin/toggle-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: uid })
         });
+        const json = await res.json();
+        if (!json.ok && json.error) serverErr = json.error;
       } catch (e) {}
-      try {
-        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
-        if (localUsers[uid]) {
-          localUsers[uid].active = localUsers[uid].active === false ? true : false;
-          localStorage.setItem('airauto_issued_users', JSON.stringify(localUsers));
-        }
-      } catch (e) {}
+
+      if (serverErr) {
+        alert(serverErr);
+        return;
+      }
+
+      const localUsers = getLocalUsersStore();
+      if (localUsers[uid]) {
+        localUsers[uid].active = localUsers[uid].active === false ? true : false;
+        saveLocalUsersStore(localUsers);
+      }
       await loadAdminUsersList();
     }
 
     async function adminDeleteUser(uid) {
-      if (!confirm(`정말 [${uid}] 회원 계정을 삭제하시겠습니까?`)) return;
+      if (!confirm(`정말 [${uid}] 계정을 삭제하시겠습니까?`)) return;
+      let serverErr = null;
       try {
-        await fetch('/api/admin/delete-user', {
+        const res = await fetch('/api/admin/delete-user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: uid })
         });
+        const json = await res.json();
+        if (!json.ok && json.error) serverErr = json.error;
       } catch (e) {}
-      try {
-        const localUsers = JSON.parse(localStorage.getItem('airauto_issued_users') || '{}');
+
+      if (serverErr) {
+        alert(serverErr);
+        return;
+      }
+
+      const localUsers = getLocalUsersStore();
+      if (uid === 'admin' || uid === 'ttmacrash') {
+        localUsers[uid] = { deleted: true };
+      } else {
         delete localUsers[uid];
-        localStorage.setItem('airauto_issued_users', JSON.stringify(localUsers));
-      } catch (e) {}
+      }
+      saveLocalUsersStore(localUsers);
+      document.getElementById('adminCreateMsg').textContent = `🗑️ [${uid}] 계정이 삭제되었습니다.`;
       await loadAdminUsersList();
     }
 
-    function copyCustomerInvite(uid, upw, name) {
-      const text = `[AirAuto 프로 안내]\n${name}님, 월 1,900원 PRO 과금 회원 계정이 발급되었습니다.\n\n• 접속 주소: ${window.location.origin}${window.location.pathname}\n• 로그인 아이디(ID): ${uid}\n• 비밀번호(PW): ${upw}\n\n우측 상단 [🔐 PRO 로그인] 버튼을 눌러 입력하시면 무제한 숙소 조회, 옆집 10곳 시세, 30일 1:1 비교표 및 벤치마킹 TOP 10 잠금이 모두 해제됩니다.`;
+    function copyCustomerInvite(uid) {
+      const pwEl = document.getElementById(`rowPw_${uid}`);
+      const nameEl = document.getElementById(`rowName_${uid}`);
+      const roleEl = document.getElementById(`rowRole_${uid}`);
+      const upw = pwEl ? pwEl.value : '';
+      const name = nameEl ? nameEl.value : uid;
+      const roleLabel = (roleEl && roleEl.value === 'ADMIN') ? 'ADMIN (관리자)' : 'PRO 과금 회원';
+      const text = `[AirAuto 계정 발급 안내]\n${name}님, ${roleLabel} 계정이 발급되었습니다.\n\n• 접속 주소: ${window.location.origin}${window.location.pathname}\n• 로그인 아이디(ID): ${uid}\n• 비밀번호(PW): ${upw}\n\n우측 상단 [🔐 PRO 로그인] 버튼을 눌러 입력하시면 모든 기능 잠금이 즉시 해제됩니다.`;
       navigator.clipboard.writeText(text);
       alert(`고객 전달용 안내문이 복사되었습니다!\n\n${text}`);
     }
