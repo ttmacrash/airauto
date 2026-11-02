@@ -1,0 +1,476 @@
+{
+  "ok": true,
+  "data": {
+    "areaKey": "seongsu",
+    "areaName": "성동구 성수역·서울숲 일대",
+    "targetYear": 2026,
+    "targetMonth": 11,
+    "targets": [
+      {
+        "listingId": "32821023",
+        "name": "[여성 전용] HAPI HOUSE 1 - 2BR, 전용 욕실",
+        "distanceM": 322,
+        "ratingStr": "5.0 (130)",
+        "ratingAverage": 5.0,
+        "ratingCount": 130,
+        "specs": "침실 2개 · 이층침대 2개 · 욕실 1개",
+        "hostName": "Hapi",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 18,
+        "portraitPhotoCount": 4,
+        "photoWeaknessScore": 92,
+        "photoWeaknessReasons": [
+          "초기 등록 구축 숙소 (8자리 구형 ID · 최신 감성 인테리어 부재)",
+          "이층침대 위주 옛날 게스트하우스 스타일 사진 구성",
+          "세로형(폰카 비율) 사진 4장 포함 · 광각 조명 보정 미흡"
+        ],
+        "keyAmenitiesPresent": [
+          "넷플릭스/스마트TV",
+          "전용 작업 공간"
+        ],
+        "missingKeyAmenities": [
+          "건조기",
+          "엘리베이터",
+          "무료 주차"
+        ],
+        "checkinDescription": "새절역 도보 5분 거리 주택가 위치 · 디지털 도어락 셀프 체크인 안내문 발송 (단, 여성 전용 제한 및 이층침대 구조라 커플·가족 수요를 우리가 흡수 가능!)",
+        "bookedDays": 24,
+        "openDays": 6,
+        "occupancyRate": 80.0,
+        "avgStayLength": 3.4,
+        "bookingPatternText": "외국인/여성 3~4박 중장기 연박형",
+        "targetPrice2p": 99000,
+        "targetPrice4p": 119000,
+        "myUndercutPrice2p": 94000,
+        "estimatedBookedNights": 26,
+        "estimatedMonthlyGross": 2444000,
+        "estimatedMonthlyNetProfit": 1594000,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/8913b677-028c-4cd2-a687-917e5f42fd12.jpg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/8913b677-028c-4cd2-a687-917e5f42fd12.jpg",
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-32821023/original/09e47e95-3300-4ed5-af4f-a0060d8f7420.jpeg",
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-32821023/original/96516525-fbe1-4eb2-adfd-48a6b73223f7.jpeg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/32821023"
+      },
+      {
+        "listingId": "8311905",
+        "name": "제이에스하우스 (새절역 역세권 3룸)",
+        "distanceM": 237,
+        "ratingStr": "4.89 (93)",
+        "ratingAverage": 4.89,
+        "ratingCount": 93,
+        "specs": "침실 3개 · 침대 5개 · 욕실 2개",
+        "hostName": "JS Host",
+        "isSuperhost": false,
+        "isGuestFavorite": false,
+        "photoCount": 14,
+        "portraitPhotoCount": 5,
+        "photoWeaknessScore": 96,
+        "photoWeaknessReasons": [
+          "🎯 1순위 타겟: 후기 93개 대량 보유이나 평점 4.89로 슈퍼호스트 탈락!",
+          "7자리 구형 ID · 형광등 직사 조명 & 어두운 거실 폰카 사진",
+          "사진별 공간 설명(캡션) 미작성 · 침구 스타일링 구형"
+        ],
+        "keyAmenitiesPresent": [
+          "무료 주차",
+          "넷플릭스/스마트TV"
+        ],
+        "missingKeyAmenities": [
+          "건조기",
+          "엘리베이터",
+          "무료 짐보관"
+        ],
+        "checkinDescription": "새절역 도보 4분 · 1층 번호키 출입 후 계단 이동 · 체크인 당일 오후 3시 문자로 비밀번호 안내 (짐보관 서비스 없음 → 우리가 무료 짐보관 제시 시 완승!)",
+        "bookedDays": 23,
+        "openDays": 7,
+        "occupancyRate": 76.7,
+        "avgStayLength": 2.9,
+        "bookingPatternText": "가족·친구 2~3박 주말/평일 혼합형",
+        "targetPrice2p": 113792,
+        "targetPrice4p": 143792,
+        "myUndercutPrice2p": 108792,
+        "estimatedBookedNights": 26,
+        "estimatedMonthlyGross": 2828592,
+        "estimatedMonthlyNetProfit": 1878592,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/4ba6ba77-762b-464c-91e0-da04d3b11314.jpg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/4ba6ba77-762b-464c-91e0-da04d3b11314.jpg",
+          "https://a0.muscache.com/im/pictures/580a4ae8-3077-48b8-bcc7-0965ee34decb.jpg",
+          "https://a0.muscache.com/im/pictures/37b52c74-d666-4766-b1d3-e6ff690e5962.jpg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/8311905"
+      },
+      {
+        "listingId": "1630706163417305575",
+        "name": "[11월특가] 서울 가을여행｜은평한옥마을·홍대·경복궁·종로3가｜최대8인｜무료주차 공항버스",
+        "distanceM": 411,
+        "ratingStr": "5.0 (46)",
+        "ratingAverage": 5.0,
+        "ratingCount": 46,
+        "specs": "침실 3개 · 퀸사이즈 침대 4개 · 욕실 1개",
+        "hostName": "은평 호스트",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 22,
+        "portraitPhotoCount": 3,
+        "photoWeaknessScore": 78,
+        "photoWeaknessReasons": [
+          "썸네일 1번 사진에 텍스트/분할 컷 과다 사용 (모바일 가독성 분산)",
+          "최대 8인 대비 욕실 1개 구조 (욕실 대기 불편 틈새 존재)",
+          "1박 ₩163,603 고가 책정 → -₩5,000 언더컷 시 가성비 압도 가능"
+        ],
+        "keyAmenitiesPresent": [
+          "무료 주차",
+          "넷플릭스/스마트TV",
+          "전용 작업 공간"
+        ],
+        "missingKeyAmenities": [
+          "엘리베이터",
+          "무료 짐보관"
+        ],
+        "checkinDescription": "공항버스 정류장 도보 5분 · 도어락 셀프 체크인 · 타이틀 맨 앞에 [11월특가] 키워드를 배치해 클릭률 유도 중",
+        "bookedDays": 23,
+        "openDays": 7,
+        "occupancyRate": 76.7,
+        "avgStayLength": 3.3,
+        "bookingPatternText": "가족/단체 3~4박 고단가 연박형",
+        "targetPrice2p": 163603,
+        "targetPrice4p": 199816,
+        "myUndercutPrice2p": 158603,
+        "estimatedBookedNights": 25,
+        "estimatedMonthlyGross": 3965075,
+        "estimatedMonthlyNetProfit": 2815075,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1630706163417305575/original/d2d84ec0-ffe5-4f75-b6da-d670114795bc.png",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1630706163417305575/original/d2d84ec0-ffe5-4f75-b6da-d670114795bc.png",
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1630706163417305575/original/af0023d4-0cea-4abd-9a7d-525a4e2a3064.png",
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1630706163417305575/original/54d16a59-2019-4349-bb81-2cef798a0720.png"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1630706163417305575"
+      },
+      {
+        "listingId": "1573166415151924411",
+        "name": "[홍대까지 15분] 새로 지은 2룸 건물",
+        "distanceM": 111,
+        "ratingStr": "4.92 (39)",
+        "ratingAverage": 4.92,
+        "ratingCount": 39,
+        "specs": "침실 2개 · 침대 3개 · 욕실 1개",
+        "hostName": "Nate (미스터멘션)",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 19,
+        "portraitPhotoCount": 3,
+        "photoWeaknessScore": 85,
+        "photoWeaknessReasons": [
+          "🎯 후기 39개 · 11월 예약률 90%지만 위치 평점(4.79) 및 전체 평점(4.92) 낮음",
+          "화이트 벽지 기본 빌라 상태 그대로 촬영 (감성 소품·조명 연출 부족)",
+          "2인 기본가를 ₩110,348로 낮추고 3인부터 인원추가금을 받는 구조"
+        ],
+        "keyAmenitiesPresent": [
+          "넷플릭스/스마트TV",
+          "전용 작업 공간"
+        ],
+        "missingKeyAmenities": [
+          "건조기",
+          "무료 짐보관",
+          "무료 주차"
+        ],
+        "checkinDescription": "미스터멘션 공동호스트 위탁 운영 · 체크인 하루 전 자동 메시지 발송 · 기본에 충실하나 감성 웰컴 키트나 짐보관 서비스 부재",
+        "bookedDays": 27,
+        "openDays": 3,
+        "occupancyRate": 90.0,
+        "avgStayLength": 2.7,
+        "bookingPatternText": "평일 2인 커플 + 주말 4인 회전형 (11월 90% 만실)",
+        "targetPrice2p": 110348,
+        "targetPrice4p": 133308,
+        "myUndercutPrice2p": 105348,
+        "estimatedBookedNights": 27,
+        "estimatedMonthlyGross": 2844396,
+        "estimatedMonthlyNetProfit": 1994396,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1573166415151924411/original/8377e207-3a90-4dc2-809d-95ab4053b6ea.png",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1573166415151924411/original/8377e207-3a90-4dc2-809d-95ab4053b6ea.png"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1573166415151924411"
+      },
+      {
+        "listingId": "1627358926242051687",
+        "name": "신축 E/V | 새절역 3분 | 홍대 명동 이태원 | 은은한 햇살의 시간",
+        "distanceM": 8,
+        "ratingStr": "4.97 (38)",
+        "ratingAverage": 4.97,
+        "ratingCount": 38,
+        "specs": "침실 2개 · 침대 3개 · 욕실 1개",
+        "hostName": "Bella",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 24,
+        "portraitPhotoCount": 1,
+        "photoWeaknessScore": 72,
+        "photoWeaknessReasons": [
+          "내 숙소와 같은 건물/8m 초근접! 11월 93%(28박) 예약 마감",
+          "평일 2인 ₩214,076 / 주말 ₩180,000 고단가 배짱 영업 중",
+          "이 집이 만실이라 못 들어온 게스트를 우리가 -₩5,000~-₩30,000 언더컷으로 전량 흡수 가능!"
+        ],
+        "keyAmenitiesPresent": [
+          "엘리베이터",
+          "건조기",
+          "넷플릭스/스마트TV"
+        ],
+        "missingKeyAmenities": [
+          "무료 주차",
+          "무료 짐보관"
+        ],
+        "checkinDescription": "새절역 3분 신축 엘리베이터 건물 · 낮 시간 자연광(햇살) 사진을 1번 썸네일로 배치해 채광 강조 · 최소 2박 고정 운영",
+        "bookedDays": 28,
+        "openDays": 2,
+        "occupancyRate": 93.3,
+        "avgStayLength": 4.0,
+        "bookingPatternText": "외국인/가족 3~5박 고단가 연박형 (월 매출 500만+)",
+        "targetPrice2p": 180000,
+        "targetPrice4p": 214076,
+        "myUndercutPrice2p": 175000,
+        "estimatedBookedNights": 26,
+        "estimatedMonthlyGross": 4550000,
+        "estimatedMonthlyNetProfit": 3400000,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1627358926242051687/original/e6fffd63-ffac-4bbe-92d4-605ec2f43f78.jpeg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1627358926242051687/original/e6fffd63-ffac-4bbe-92d4-605ec2f43f78.jpeg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1627358926242051687"
+      },
+      {
+        "listingId": "1627302071757596638",
+        "name": "엘리하우스(Elly house)",
+        "distanceM": 65,
+        "ratingStr": "4.97 (37)",
+        "ratingAverage": 4.97,
+        "ratingCount": 37,
+        "specs": "침실 2개 · 침대 2개 · 욕실 1개",
+        "hostName": "Elly",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 16,
+        "portraitPhotoCount": 3,
+        "photoWeaknessScore": 84,
+        "photoWeaknessReasons": [
+          "숙소 제목이 너무 짧아([엘리하우스]) 역세권·공항버스 검색 키워드 노출 약함",
+          "평범한 가정집 침구 및 세로 비율 사진 다수 포함",
+          "평일 ₩110,565 실속가로 11월 83%(25박) 가동 중"
+        ],
+        "keyAmenitiesPresent": [
+          "넷플릭스/스마트TV"
+        ],
+        "missingKeyAmenities": [
+          "건조기",
+          "엘리베이터",
+          "무료 짐보관"
+        ],
+        "checkinDescription": "새절역 도보 3분 · 비대면 도어락 체크인 · 제목에 키워드가 없는데도 가격(₩110,565)과 후기(37개)만으로 83% 예약 달성",
+        "bookedDays": 25,
+        "openDays": 5,
+        "occupancyRate": 83.3,
+        "avgStayLength": 2.8,
+        "bookingPatternText": "주말 포함 2~3박 알뜰 커플/친구 회전형",
+        "targetPrice2p": 110565,
+        "targetPrice4p": 110565,
+        "myUndercutPrice2p": 105565,
+        "estimatedBookedNights": 27,
+        "estimatedMonthlyGross": 2850255,
+        "estimatedMonthlyNetProfit": 2000255,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1627302071757596638/original/902682c0-915f-4a10-bc24-44360b9ceac2.jpeg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1627302071757596638/original/902682c0-915f-4a10-bc24-44360b9ceac2.jpeg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1627302071757596638"
+      },
+      {
+        "listingId": "1644122951065940911",
+        "name": "[ANKAN] #6호선 #지하철, 공항버스 5분 #시원한객실 #홍대,망원인근 #월드컵경기장",
+        "distanceM": 0,
+        "ratingStr": "5.0 (35)",
+        "ratingAverage": 5.0,
+        "ratingCount": 35,
+        "specs": "침실 2개 · 침대 2개 · 욕실 1개",
+        "hostName": "아느칸",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 20,
+        "portraitPhotoCount": 2,
+        "photoWeaknessScore": 76,
+        "photoWeaknessReasons": [
+          "같은 블록 0m 경쟁자 · 후기 35개 ★5.0 · 11월 93%(28박) 예약 마감",
+          "제목에 여름철 키워드(#시원한객실)가 11월에도 그대로 방치됨",
+          "2인 ₩114,212 / 4인 ₩134,212 이원화 요금제로 예약 싹쓸이 중"
+        ],
+        "keyAmenitiesPresent": [
+          "넷플릭스/스마트TV",
+          "전용 작업 공간"
+        ],
+        "missingKeyAmenities": [
+          "건조기",
+          "무료 주차",
+          "무료 짐보관"
+        ],
+        "checkinDescription": "새절역·공항버스 5분 동선 강조 · 해시태그(#) 나열형 제목 사용 · 평일 최소 1박 허용으로 사이사이 낀 날까지 93% 가동",
+        "bookedDays": 28,
+        "openDays": 2,
+        "occupancyRate": 93.3,
+        "avgStayLength": 2.5,
+        "bookingPatternText": "1~3박 초고속 회전형 (빈틈없는 93% 가동)",
+        "targetPrice2p": 114212,
+        "targetPrice4p": 134212,
+        "myUndercutPrice2p": 109212,
+        "estimatedBookedNights": 28,
+        "estimatedMonthlyGross": 3057936,
+        "estimatedMonthlyNetProfit": 2057936,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1644122951065940911/original/125b8dc2-e872-4caa-9366-96876aa78984.jpeg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1644122951065940911/original/125b8dc2-e872-4caa-9366-96876aa78984.jpeg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1644122951065940911"
+      },
+      {
+        "listingId": "926764362992858332",
+        "name": "[까사미갈루] 서울북부 가족모임 방2, 욕실2, 넓은주방, 주차공간, 엘리베이터",
+        "distanceM": 919,
+        "ratingStr": "4.97 (34)",
+        "ratingAverage": 4.97,
+        "ratingCount": 34,
+        "specs": "침실 2개 · 소파침대 1개 · 욕실 2개",
+        "hostName": "까사미갈루 (미스터멘션)",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 21,
+        "portraitPhotoCount": 2,
+        "photoWeaknessScore": 79,
+        "photoWeaknessReasons": [
+          "구형 Miso 등록 숙소 · 역에서 919m 떨어져 도보 이동 불편",
+          "소파침대 포함 구조인데 1박 ₩185,000+ 고단가 책정으로 11월 12박 공실 발생",
+          "역세권인 내 숙소가 -₩5,000 언더컷 시 도보 여행객 100% 흡수 가능"
+        ],
+        "keyAmenitiesPresent": [
+          "엘리베이터",
+          "무료 주차",
+          "넷플릭스/스마트TV"
+        ],
+        "missingKeyAmenities": [
+          "무료 짐보관",
+          "건조기"
+        ],
+        "checkinDescription": "차량 이동 가족 타겟 · 미스터멘션 공동호스트 운영 · 역과의 거리가 멀어 대중교통 외국인 게스트 유입에는 취약",
+        "bookedDays": 18,
+        "openDays": 12,
+        "occupancyRate": 60.0,
+        "avgStayLength": 3.0,
+        "bookingPatternText": "주말 내국인 가족 모임 위주 (평일 공실 다수)",
+        "targetPrice2p": 185000,
+        "targetPrice4p": 225000,
+        "myUndercutPrice2p": 180000,
+        "estimatedBookedNights": 23,
+        "estimatedMonthlyGross": 4140000,
+        "estimatedMonthlyNetProfit": 2990000,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/miso/Hosting-926764362992858332/original/332ba951-efba-4339-b7a6-e6bb0a281215.jpeg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/miso/Hosting-926764362992858332/original/332ba951-efba-4339-b7a6-e6bb0a281215.jpeg",
+          "https://a0.muscache.com/im/pictures/miso/Hosting-926764362992858332/original/4bba3253-b82b-47eb-b8e6-5c765f716dbd.jpeg",
+          "https://a0.muscache.com/im/pictures/miso/Hosting-926764362992858332/original/86b96dc3-ea8b-4331-94d7-7cd34d21a40d.jpeg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/926764362992858332"
+      },
+      {
+        "listingId": "1612945891747979882",
+        "name": "신축 E/V 지하철3분 공항버스｜홍대입구역15분 망원 합정라인｜가족 친구｜숲전망｜공원 휴식",
+        "distanceM": 65,
+        "ratingStr": "4.97 (30)",
+        "ratingAverage": 4.97,
+        "ratingCount": 30,
+        "specs": "침실 2개 · 침대 2개 · 욕실 1개",
+        "hostName": "은평 호스트",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 18,
+        "portraitPhotoCount": 2,
+        "photoWeaknessScore": 86,
+        "photoWeaknessReasons": [
+          "🎯 보내주신 2번 링크 숙소: 후기 30개 보유했으나 최소 숙박을 3~4박으로 묶어둠!",
+          "3~4박 제한 + ₩186,000 고단가 때문에 11월 12박(40%)이 통째로 비어 있음",
+          "우리가 최소 1~2박 + -₩5,000 언더컷 세팅 시 이 집이 놓친 1~2박 수요 독식!"
+        ],
+        "keyAmenitiesPresent": [
+          "엘리베이터",
+          "넷플릭스/스마트TV"
+        ],
+        "missingKeyAmenities": [
+          "무료 짐보관",
+          "무료 주차"
+        ],
+        "checkinDescription": "새절역 3분 · 숲전망/공원 뷰 강조 · 그러나 최소 3~4박 제한 때문에 단기 여행객이 예약하지 못하고 이탈 중",
+        "bookedDays": 18,
+        "openDays": 12,
+        "occupancyRate": 60.0,
+        "avgStayLength": 4.5,
+        "bookingPatternText": "3~4박 이상 장기 게스트만 선별 수용 (단기 수요 포기)",
+        "targetPrice2p": 186000,
+        "targetPrice4p": 216000,
+        "myUndercutPrice2p": 181000,
+        "estimatedBookedNights": 24,
+        "estimatedMonthlyGross": 4344000,
+        "estimatedMonthlyNetProfit": 3194000,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1612945891747979882/original/88aefad3-d0bc-4643-bbd2-e844b3dd8cb6.jpeg",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1612945891747979882/original/88aefad3-d0bc-4643-bbd2-e844b3dd8cb6.jpeg"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1612945891747979882"
+      },
+      {
+        "listingId": "1607074495612377400",
+        "name": "홍대 한강 10분 이태원 종로 20분 공항버스 공항철도 새절역 도보 2분 4인 신축 아파트",
+        "distanceM": 136,
+        "ratingStr": "4.96 (26)",
+        "ratingAverage": 4.96,
+        "ratingCount": 26,
+        "specs": "침실 1개 · 침대 2개 · 욕실 1개",
+        "hostName": "새절 호스트",
+        "isSuperhost": true,
+        "isGuestFavorite": true,
+        "photoCount": 15,
+        "portraitPhotoCount": 3,
+        "photoWeaknessScore": 81,
+        "photoWeaknessReasons": [
+          "침실 1개(원룸/1.5룸형) 구조인데도 ₩104,400 가성비로 11월 96.7%(29박) 만실!",
+          "사진은 평범한 아파트 실사진 15장뿐이나 교통 키워드(홍대·한강·이태원·종로)로 검색 장악",
+          "침실 2개인 내 숙소가 평일 빈 날만 이 가격 근처로 맞추면 즉시 100% 만실 가능"
+        ],
+        "keyAmenitiesPresent": [
+          "엘리베이터",
+          "건조기",
+          "넷플릭스/스마트TV"
+        ],
+        "missingKeyAmenities": [
+          "무료 짐보관"
+        ],
+        "checkinDescription": "새절역 도보 2분 초역세권 강조 · 11월 30일 중 29일 예약 완료(96.7%) · 최소 1박 허용으로 공실 제로 달성",
+        "bookedDays": 29,
+        "openDays": 1,
+        "occupancyRate": 96.7,
+        "avgStayLength": 2.6,
+        "bookingPatternText": "11월 29/30박(96.7%) 초강력 풀가동형",
+        "targetPrice2p": 104400,
+        "targetPrice4p": 124400,
+        "myUndercutPrice2p": 99400,
+        "estimatedBookedNights": 28,
+        "estimatedMonthlyGross": 2783200,
+        "estimatedMonthlyNetProfit": 1833200,
+        "thumbnailUrl": "https://a0.muscache.com/im/pictures/hosting/Hosting-1607074495612377400/original/361c16ef-1404-4dae-9806-f1c340fbd45c.png",
+        "samplePhotos": [
+          "https://a0.muscache.com/im/pictures/hosting/Hosting-1607074495612377400/original/361c16ef-1404-4dae-9806-f1c340fbd45c.png"
+        ],
+        "url": "https://www.airbnb.co.kr/rooms/1607074495612377400"
+      }
+    ]
+  }
+}

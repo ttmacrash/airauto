@@ -33,24 +33,50 @@
 </head>
 <body class="min-h-screen pb-28">
 
-  <!-- 상단 네비게이션 -->
-  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200">
-    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl airbnb-btn flex items-center justify-center font-black text-white text-lg">A</div>
-        <div>
-          <span class="font-extrabold text-lg text-slate-900">AirAuto</span>
-          <span class="ml-1.5 text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200">AI 공동호스트</span>
+  <!-- 상단 네비게이션 (2개 탭 메뉴 포함) -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl airbnb-btn flex items-center justify-center font-black text-white text-lg">A</div>
+          <div>
+            <span class="font-extrabold text-lg text-slate-900">AirAuto</span>
+            <span class="ml-1.5 text-xs px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200">AI 공동호스트</span>
+          </div>
         </div>
+        <button onclick="openSubscribeModal()" class="sm:hidden airbnb-btn px-3 py-1.5 rounded-lg text-white font-bold text-xs">
+          월 1,900원 구독
+        </button>
       </div>
-      <div class="flex items-center gap-3">
-        <span class="hidden sm:inline text-xs text-slate-500">숙소 1개당 <strong class="text-slate-900">월 1,900원</strong></span>
+
+      <!-- 중앙 탭 전환 버튼 -->
+      <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <button
+          id="navTab1Btn"
+          onclick="switchMainTab('tab1')"
+          class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition"
+        >
+          🏠 1. 내 숙소 공실 진단 & 자동세팅
+        </button>
+        <button
+          id="navTab2Btn"
+          onclick="switchMainTab('tab2')"
+          class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition"
+        >
+          🎯 2. 월 순수익 200 벤치마킹 타겟 발굴기 (9단계 공식)
+        </button>
+      </div>
+
+      <div class="hidden sm:flex items-center gap-3">
         <button onclick="openSubscribeModal()" class="airbnb-btn px-4 py-2 rounded-xl text-white font-bold text-xs sm:text-sm shadow-sm">
           월 1,900원 자동 세팅 켜기
         </button>
       </div>
     </div>
   </header>
+
+  <!-- ==================== TAB 1 WRAPPER ==================== -->
+  <div id="mainTab1Container">
 
   <!-- 상단 검색 영역 -->
   <section class="bg-white border-b border-slate-200 py-8 sm:py-10 px-4">
@@ -324,6 +350,102 @@
     </div>
 
   </main>
+  </div>
+  <!-- ==================== END TAB 1 WRAPPER ==================== -->
+
+  <!-- ==================== TAB 2 WRAPPER: 9단계 벤치마킹 타겟 발굴기 ==================== -->
+  <div id="mainTab2Container" class="hidden">
+    <section class="bg-white border-b border-slate-200 py-8 px-4">
+      <div class="max-w-5xl mx-auto">
+        <div class="text-center max-w-3xl mx-auto mb-6">
+          <span class="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-extrabold text-xs mb-3 border border-amber-300">
+            🎯 에어비앤비 월 순수익 200만 원 9단계 벤치마킹 공식
+          </span>
+          <h2 class="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight mb-2">
+            "후기 많은데 <span class="text-rose-600">사진·시설이 아쉬운 집</span>을 찾아 5천 원만 깎아라"
+          </h2>
+          <p class="text-slate-500 text-sm sm:text-base">
+            이미 수요가 검증된(후기 30~130개 이상) 동네 인기 숙소 중, 사진이나 시설 틈새가 있는 타겟을 골라<br class="hidden sm:inline" />
+            <strong>가격·어메니티·체크인 동선·30일 예약 패턴</strong>을 통째로 흡수하는 스캐너입니다.
+          </p>
+        </div>
+
+        <!-- 9단계 로드맵 요약 배너 -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-black text-rose-600 mb-1">STEP 1 ~ 4 · 매물 & 타겟 발굴</div>
+            <div class="text-xs text-slate-700 leading-relaxed">
+              ① 위탁 공간 사이트 3곳(삼삼엠투·위홈·에어비앤비) 세팅<br/>
+              ② 집주인 동의서 가능한 역세권 매물 확보<br/>
+              ③ <strong>동네 슈퍼호스트 10곳 스캔 후 후기 많고 사진 아쉬운 집 타겟팅</strong>
+            </div>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
+            <div class="text-xs font-black text-amber-700 mb-1">STEP 5 ~ 7 · 해부 & -5,000원 언더컷</div>
+            <div class="text-xs text-slate-700 leading-relaxed">
+              ⑤ <strong>타겟 숙소의 가격·어메니티·체크인 동선 100% 해부</strong><br/>
+              ⑥ <strong>내 숙소는 그 집보다 1박당 딱 5,000원만 할인 세팅</strong><br/>
+              ⑦ 한 달간 타겟의 예약 패턴(평일/주말 회전율) 그대로 흡수
+            </div>
+          </div>
+          <div class="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+            <div class="text-xs font-black text-emerald-800 mb-1">STEP 8 ~ 9 · 월 순수익 200 & 슈퍼호스트</div>
+            <div class="text-xs text-slate-700 leading-relaxed">
+              ⑧ 검증된 수요 + 5천 원 가격 우위로 첫 달부터 <strong>월 순수익 200만 원 달성</strong><br/>
+              ⑨ 후기 쌓인 뒤 <strong>전문 사진 재촬영 & 슈퍼호스트 달고 정상가 인상!</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 동네 선택 및 스캔 버튼 -->
+        <div class="max-w-2xl mx-auto bg-slate-50 p-2.5 rounded-2xl border border-slate-300 flex flex-col sm:flex-row gap-2">
+          <select
+            id="benchAreaSelect"
+            onchange="runBenchmarkScan()"
+            class="flex-1 px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-900 text-sm font-extrabold focus:outline-none focus:border-rose-500"
+          >
+            <option value="saejeol" selected>📍 은평구 새절역·응암·증산 (현재 내 동네 반경 1km)</option>
+            <option value="mangwon">📍 마포구 망원·합정 (6호선 라인)</option>
+            <option value="yeonnam">📍 마포구 홍대입구·연남동</option>
+            <option value="seongsu">📍 성동구 성수·건대입구</option>
+            <option value="jongno">📍 종로구 경복궁·북촌·익선동</option>
+            <option value="itaewon">📍 용산구 이태원·한남·삼각지</option>
+          </select>
+          <button
+            id="benchScanBtn"
+            onclick="runBenchmarkScan()"
+            class="airbnb-btn px-6 py-3 rounded-xl font-extrabold text-white text-sm shadow-md whitespace-nowrap"
+          >
+            🔍 이 동네 벤치마킹 타겟 스캔하기
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 벤치마킹 로딩 -->
+    <div id="benchLoadingBox" class="hidden max-w-3xl mx-auto px-4 py-16 text-center">
+      <div class="inline-block w-10 h-10 border-4 border-rose-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <h3 class="text-lg font-extrabold text-slate-800">이 동네 후기 상위 숙소들의 사진 품질·어메니티·가격·예약 패턴을 해부 중입니다...</h3>
+      <p class="text-xs text-slate-500 mt-1">약 4~6초 소요됩니다</p>
+    </div>
+
+    <!-- 벤치마킹 결과 리스트 -->
+    <section id="benchResultContainer" class="max-w-5xl mx-auto px-4 pt-8 space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h3 class="text-lg sm:text-xl font-black text-slate-900" id="benchAreaHeadline">
+            🔥 은평구 새절역·응암·증산 벤치마킹 타겟 TOP 리스트 (후기순 정렬)
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">
+            후기가 많아 위치 수요는 100% 검증되었지만, 사진·시설·인원요금 보완 + <strong>1박 -5,000원 언더컷</strong>으로 손님을 뺏어올 수 있는 타겟들입니다.
+          </p>
+        </div>
+      </div>
+
+      <div id="benchTargetsGrid" class="space-y-5"></div>
+    </section>
+  </div>
+  <!-- ==================== END TAB 2 WRAPPER ==================== -->
 
   <!-- 경쟁 숙소 1:1 상세 비교 모달 (날짜별 판매가 & 내 집과의 금액 차이) -->
   <div id="compDetailModal" class="fixed inset-0 z-50 hidden bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
@@ -1166,6 +1288,172 @@
       const btn = document.getElementById('copyBotBtn');
       btn.textContent = '복사 완료!';
       setTimeout(() => { btn.textContent = '이메일 복사'; }, 2000);
+    }
+
+    let benchLoaded = false;
+
+    function switchMainTab(tabName) {
+      const t1 = document.getElementById('mainTab1Container');
+      const t2 = document.getElementById('mainTab2Container');
+      const b1 = document.getElementById('navTab1Btn');
+      const b2 = document.getElementById('navTab2Btn');
+
+      if (tabName === 'tab1') {
+        t1.classList.remove('hidden');
+        t2.classList.add('hidden');
+        b1.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition';
+        b2.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition';
+      } else {
+        t1.classList.add('hidden');
+        t2.classList.remove('hidden');
+        b2.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold bg-white text-rose-600 shadow-sm transition';
+        b1.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold text-slate-600 hover:text-slate-900 transition';
+        if (!benchLoaded) {
+          runBenchmarkScan();
+        }
+      }
+    }
+
+    async function runBenchmarkScan() {
+      const areaKey = document.getElementById('benchAreaSelect').value;
+      document.getElementById('benchLoadingBox').classList.remove('hidden');
+      document.getElementById('benchResultContainer').classList.add('hidden');
+
+      try {
+        let json = null;
+        try {
+          const res = await fetch(`/api/benchmark-scan?area=${encodeURIComponent(areaKey)}&year=2026&month=11`);
+          if (res.ok) json = await res.json();
+        } catch (e) {}
+
+        if (!json || !json.ok) {
+          const snapRes = await fetch(`./data/benchmark_${areaKey}.json`);
+          if (snapRes.ok) json = await snapRes.json();
+          else {
+            const fbRes = await fetch(`./data/benchmark_saejeol.json`);
+            if (fbRes.ok) json = await fbRes.json();
+          }
+        }
+
+        if (json && json.ok) {
+          benchLoaded = true;
+          renderBenchmarkTargets(json.data);
+        }
+      } catch (err) {
+        alert('벤치마킹 스캔 중 오류: ' + err.message);
+      } finally {
+        document.getElementById('benchLoadingBox').classList.add('hidden');
+      }
+    }
+
+    function renderBenchmarkTargets(data) {
+      document.getElementById('benchResultContainer').classList.remove('hidden');
+      document.getElementById('benchAreaHeadline').textContent =
+        `🔥 ${data.areaName} — 벤치마킹 타겟 TOP ${data.targets.length}곳 (후기 많은 순)`;
+
+      const grid = document.getElementById('benchTargetsGrid');
+      grid.innerHTML = '';
+
+      (data.targets || []).forEach((t, idx) => {
+        const photosHtml = (t.samplePhotos && t.samplePhotos.length > 0 ? t.samplePhotos : [t.thumbnailUrl]).filter(Boolean).slice(0, 3).map(url =>
+          `<img src="${url}" class="w-24 h-20 sm:w-28 sm:h-24 rounded-xl object-cover border border-slate-200 bg-slate-100 flex-shrink-0" />`
+        ).join('');
+
+        const weaknessBadges = (t.photoWeaknessReasons || []).map(r =>
+          `<span class="inline-block px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold mr-1.5 mb-1.5">📸 공략포인트: ${r}</span>`
+        ).join('');
+
+        const presentAmenHtml = (t.keyAmenitiesPresent || []).map(a =>
+          `<span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-semibold">⭕ ${a}</span>`
+        ).join(' ');
+
+        const missingAmenHtml = (t.missingKeyAmenities || []).map(a =>
+          `<span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-[11px] font-extrabold">❌ ${a} 없음 (우리가 넣으면 이김!)</span>`
+        ).join(' ');
+
+        const card = document.createElement('div');
+        card.className = 'card p-5 sm:p-6 border-2 border-slate-200 hover:border-rose-400 transition space-y-4';
+        card.innerHTML = `
+          <!-- 상단: 순위, 제목, 후기 수, 사진 미리보기 -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div class="space-y-1.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-xs font-black">타겟 #${idx + 1}</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-extrabold">🔥 후기 ${t.ratingCount}개 (평점 ★${t.ratingAverage})</span>
+                ${t.isSuperhost ? '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">🏅 슈퍼호스트/인기</span>' : ''}
+                <span class="text-xs text-slate-500 font-semibold">거리 ${t.distanceM}m · 호스트 ${t.hostName}</span>
+              </div>
+              <h4 class="text-base sm:text-lg font-black text-slate-900">${t.name}</h4>
+              <p class="text-xs text-slate-500">${t.specs} · 총 사진 ${t.photoCount || 15}장 ${t.portraitPhotoCount ? `(세로형 폰카 비율 ${t.portraitPhotoCount}장)` : ''}</p>
+            </div>
+            <div class="flex items-center gap-2 overflow-x-auto">
+              ${photosHtml}
+            </div>
+          </div>
+
+          <!-- 중단 1: 왜 이 집이 만만한 먹잇감인가? (4단계 & 5단계: 사진 약점 + 어메니티 + 체크인 동선) -->
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div class="md:col-span-7 space-y-2.5">
+              <div class="text-xs font-extrabold text-slate-500">STEP 4 & 5 · 사진 약점 및 어메니티·체크인 동선 해부</div>
+              <div>${weaknessBadges}</div>
+              <div class="flex flex-wrap gap-1.5">${presentAmenHtml} ${missingAmenHtml}</div>
+              ${t.checkinDescription ? `
+                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 leading-relaxed">
+                  <strong class="text-slate-900">🚪 이 집의 체크인·홍보 동선:</strong> ${t.checkinDescription}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- 중단 2: 6단계~8단계 (-5,000원 언더컷 & 월 순수익 200 시뮬레이션) -->
+            <div class="md:col-span-5 p-4 rounded-2xl bg-rose-50/70 border border-rose-200 flex flex-col justify-between space-y-3">
+              <div>
+                <div class="text-xs font-extrabold text-rose-700 mb-2">STEP 6 ~ 8 · 5,000원 언더컷 & 월 순수익 계산</div>
+                <div class="space-y-1.5 text-xs">
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">이 집의 한 달 예약 패턴</span>
+                    <span class="font-bold text-slate-900">${t.bookingPatternText || '2~3박 단기 회전형'} (11월 ${t.bookedDays}박 예약 / ${t.occupancyRate}%)</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-slate-600">이 집의 현재 2인 판매가</span>
+                    <span class="font-bold text-slate-700">${formatKRW(t.targetPrice2p)}/박 (4인 ${formatKRW(t.targetPrice4p)})</span>
+                  </div>
+                  <div class="flex justify-between pt-1.5 border-t border-rose-200/80">
+                    <span class="font-extrabold text-rose-700">👉 내 숙소 공략 요금 (-₩5,000)</span>
+                    <span class="font-black text-rose-600 text-sm">${formatKRW(t.myUndercutPrice2p)}/박</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white border border-rose-200">
+                <div class="flex items-baseline justify-between">
+                  <span class="text-xs font-extrabold text-slate-700">예상 월 순수익 (월 ${t.estimatedBookedNights}박 가동 시)</span>
+                  <span class="text-lg font-black text-emerald-600">+${formatKRW(t.estimatedMonthlyNetProfit)}</span>
+                </div>
+                <div class="text-[11px] text-slate-400 mt-0.5">
+                  월 총매출 ${formatKRW(t.estimatedMonthlyGross)} - 예상 월세·공과금·청소비(₩1,150,000) 차감 기준
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 하단 버튼 -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+            <span class="text-xs text-slate-500">💡 <strong>STEP 9:</strong> 이 가격으로 첫 달 후기 15개를 먼저 뺏어온 뒤, 사진 재촬영 후 슈퍼호스트를 달면 게임 끝!</span>
+            <div class="flex items-center gap-2">
+              <button
+                onclick="openCompDetailModal('${t.listingId}')"
+                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-600 text-white font-extrabold text-xs transition"
+              >
+                🔍 이 집의 날짜별 판매가 & 내 집과 1:1 비교표 열기
+              </button>
+              <a href="${t.url}" target="_blank" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                에어비앤비 사진 직접 보기 ↗
+              </a>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
     }
 
     window.addEventListener('DOMContentLoaded', () => {
