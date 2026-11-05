@@ -468,7 +468,7 @@ def scan_benchmark_targets(area_key: str = "saejeol", target_month: int = 11, ta
             t["url"] = f"https://www.airbnb.co.kr/rooms/{lid}"
         return t
 
-    with ThreadPoolExecutor(max_workers=6) as ex:
+    with ThreadPoolExecutor(max_workers=3) as ex:
         enriched = list(ex.map(enrich_benchmark, top_targets))
 
     return {
@@ -713,7 +713,7 @@ def fetch_ultra_close_neighbors(my_listing_id: str, lat: float, lng: float, targ
             nb["weekdayMinNights"] = f"{min(wd_mins)}~{max(wd_mins)}박" if wd_mins and min(wd_mins) != max(wd_mins) else f"{min(wd_mins) if wd_mins else 1}박"
             nb["weekendMinNights"] = f"{min(we_mins)}~{max(we_mins)}박" if we_mins and min(we_mins) != max(we_mins) else f"{min(we_mins) if we_mins else 2}박"
 
-            # Find an open weekday range and weekend range across target + next month
+            # Find an open weekday range and weekend range (prioritize target month first, then fallback to next month)
             sample_ci, sample_co, sample_nights = None, None, 2
             we_ci, we_co, we_nights = None, None, 2
             for idx in range(len(all_d) - 4):
@@ -724,12 +724,14 @@ def fetch_ultra_close_neighbors(my_listing_id: str, lat: float, lng: float, targ
                 if all(all_d[idx + k].get("available") for k in range(req_min)):
                     dt_cur = datetime.date.fromisoformat(d_cur["calendarDate"])
                     co_str = (dt_cur + datetime.timedelta(days=req_min)).isoformat()
-                    if dt_cur.weekday() in (0, 1, 2, 3) and not sample_ci:
+                    if dt_cur.weekday() in (0, 1, 2, 3, 6) and not sample_ci:
                         sample_ci, sample_co, sample_nights = d_cur["calendarDate"], co_str, req_min
                     if dt_cur.weekday() in (4, 5) and not we_ci:
                         we_ci, we_co, we_nights = d_cur["calendarDate"], co_str, req_min
                     if sample_ci and we_ci:
                         break
+            if not sample_ci and we_ci:
+                sample_ci, sample_co, sample_nights = we_ci, we_co, we_nights
 
             if sample_ci and sample_co:
                 p2 = fetch_bookit_price(lid, sample_ci, sample_co, 2, api_key)
@@ -766,7 +768,7 @@ def fetch_ultra_close_neighbors(my_listing_id: str, lat: float, lng: float, targ
             nb["occupancyRate"] = 0
         return nb
 
-    with ThreadPoolExecutor(max_workers=10) as ex:
+    with ThreadPoolExecutor(max_workers=3) as ex:
         enriched = list(ex.map(enrich_neighbor, top_neighbors))
 
     return enriched
@@ -1067,7 +1069,7 @@ def compare_competitor_detail(my_id: str, comp_id: str, target_month: int = 11, 
     my_day_price = {}
     comp_day_price = {}
 
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    with ThreadPoolExecutor(max_workers=4) as ex:
         futs = []
         for w in my_wins:
             if w["nights"] >= w["minNights"]:
@@ -1231,22 +1233,34 @@ def analyze_listing(url_or_id: str, target_month: int = 11, target_year: int = 2
         else:
             i += 1
 
-    comp_ci = windows[0]["startDate"] if windows else f"{target_year}-{target_month:02d}-10"
-    comp_co = windows[0]["endDate"] if windows else f"{target_year}-{target_month:02d}-12"
+    if windows:
+        ci_dt = datetime.date.fromisoformat(windows[0]["startDate"])
+        comp_nights = min(max(2, windows[0]["minNights"]), max(1, windows[0]["nights"]), 3)
+        comp_ci = ci_dt.isoformat()
+        comp_co = (ci_dt + datetime.timedelta(days=comp_nights)).isoformat()
+    else:
+        comp_ci = f"{target_year}-{target_month:02d}-10"
+        comp_co = f"{target_year}-{target_month:02d}-12"
 
     max_cap = min(int(meta.get("personCapacity") or 4), 6)
     competitors = []
     ultra_close = []
-    with ThreadPoolExecutor(max_workers=12) as ex:
+    with ThreadPoolExecutor(max_workers=4) as ex:
         futures = {}
         for idx, w in enumerate(windows):
+            w_ci_dt = datetime.date.fromisoformat(w["startDate"])
+            q_nights = min(w["nights"], max(2, w["minNights"])) if w["nights"] > 4 else w["nights"]
+            w_co_str = (w_ci_dt + datetime.timedelta(days=q_nights)).isoformat()
             futures[("win_1p", idx)] = ex.submit(
-                fetch_bookit_price, listing_id, w["startDate"], w["endDate"], 1, api_key
+                fetch_bookit_price, listing_id, w["startDate"], w_co_str, 1, api_key
             )
         if windows and max_cap > 1:
             w0 = windows[0]
+            w0_ci_dt = datetime.date.fromisoformat(w0["startDate"])
+            q0_nights = min(w0["nights"], max(2, w0["minNights"])) if w0["nights"] > 4 else w0["nights"]
+            w0_co_str = (w0_ci_dt + datetime.timedelta(days=q0_nights)).isoformat()
             futures[("win_maxp", 0)] = ex.submit(
-                fetch_bookit_price, listing_id, w0["startDate"], w0["endDate"], max_cap, api_key
+                fetch_bookit_price, listing_id, w0["startDate"], w0_co_str, max_cap, api_key
             )
         futures[("competitors", 0)] = ex.submit(
             fetch_nearby_competitors, listing_id, meta["lat"], meta["lng"], comp_ci, comp_co, 2

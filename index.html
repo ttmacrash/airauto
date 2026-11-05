@@ -148,7 +148,8 @@
         />
         <select
           id="targetMonthSelect"
-          class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-bold focus:outline-none"
+          onchange="runAnalysis()"
+          class="px-4 py-3 rounded-xl bg-white border border-slate-200 text-slate-800 text-sm font-bold focus:outline-none cursor-pointer"
         >
           <option value="2026-11" selected>11월 예약 분석</option>
           <option value="2026-12">12월 예약 분석</option>
@@ -1479,13 +1480,16 @@
         const container = document.getElementById('resultContainer');
         container.parentNode.insertBefore(box, container);
       }
+      const ymLabel = currentAnalysisData
+        ? `📅 <strong>${currentAnalysisData.targetYear}년 ${currentAnalysisData.targetMonth}월 예약 분석 결과</strong> · `
+        : '';
       if (isSnapshot) {
         const when = generatedAt
           ? new Date(generatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
           : '정확한 시각 미상';
-        box.innerHTML = `<div class="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">🕒 저장된 데이터입니다 (기준: ${when}). 에어비앤비의 실시간 값과 다를 수 있으며, 자동으로 주기적으로 갱신됩니다.</div>`;
+        box.innerHTML = `<div class="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">${ymLabel}🕒 저장된 스냅샷 데이터 기준 (${when}). 에어비앤비 실시간 값과 일부 차이가 있을 수 있으며 주기적으로 자동 갱신됩니다.</div>`;
       } else {
-        box.innerHTML = `<div class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold">🟢 실시간 조회 결과입니다.</div>`;
+        box.innerHTML = `<div class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold">${ymLabel}🟢 실시간 조회 결과입니다.</div>`;
       }
     }
 
@@ -1531,7 +1535,9 @@
       document.getElementById('kpiLostRevenue').textContent = formatKRW(summary.estimatedLostRevenue);
 
       // 슬라이더 기본값 세팅 (내 현재 평균 요금의 약 85% 수준으로, 절대 현재 최저 요금보다 높지 않게 설정)
-      const minOpenPrice = Math.min(...(windows.map(w => (w.pricing && w.pricing.perNightPrice) || summary.avgOpenPerNightPrice)));
+      const minOpenPrice = (windows && windows.length > 0)
+        ? Math.min(...(windows.map(w => (w.pricing && w.pricing.perNightPrice) || summary.avgOpenPerNightPrice)))
+        : (summary.avgOpenPerNightPrice || 145000);
       const suggestedFloor = Math.max(70000, Math.min(minOpenPrice - 15000, Math.round((minOpenPrice * 0.85) / 5000) * 5000));
       document.getElementById('minFloorSlider').value = suggestedFloor;
 
@@ -1570,7 +1576,14 @@
       // 4. 공실 원인 카드
       const diagList = document.getElementById('diagnosticsList');
       diagList.innerHTML = '';
-      diagnostics.forEach(diag => {
+      if (!diagnostics || diagnostics.length === 0) {
+        diagList.innerHTML = `
+          <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold">
+            🎉 ${targetMonth}월은 현재 남아있는 공실이 없거나 요금·최소박수 세팅이 정상입니다.
+          </div>
+        `;
+      }
+      (diagnostics || []).forEach(diag => {
         const card = document.createElement('div');
         card.className = 'p-4 rounded-2xl bg-slate-50 border border-slate-200';
         card.innerHTML = `
@@ -1716,7 +1729,7 @@
             ${isLocked ? `
               <div class="absolute inset-0 bg-slate-900/45 backdrop-blur-[2px] flex flex-col items-center justify-center p-4 text-center">
                 <span class="px-2.5 py-1 rounded-full bg-amber-400 text-slate-950 text-[11px] font-black mb-1.5">🔒 월 1,900원 PRO 전용 데이터 (옆집 #${idx + 1})</span>
-                <p class="text-white font-extrabold text-xs sm:text-sm mb-2.5">이 옆집의 11월 예약률(${nb.occupancyRate}%)과 2인/4인 요금·최소박수 확인하기</p>
+                <p class="text-white font-extrabold text-xs sm:text-sm mb-2.5">이 옆집의 ${targetMonth}월 예약률(${nb.occupancyRate}%)과 2인/4인 요금·최소박수 확인하기</p>
                 <button onclick="openAuthModal('login', '🔒 <strong>초근접 옆집 3~10위 시세 및 최소숙박일수는 PRO 회원 전용입니다.</strong><br/>발급받은 PRO 아이디·비밀번호로 로그인 시 10곳 전체가 즉시 공개됩니다.')" class="px-4 py-2 rounded-xl airbnb-btn text-white font-black text-xs shadow-lg">
                   🔐 PRO 로그인으로 잠금 해제 →
                 </button>
@@ -1817,6 +1830,17 @@
 
       const tbody = document.getElementById('simulatorTableBody');
       tbody.innerHTML = '';
+
+      if (!currentAnalysisData.windows || currentAnalysisData.windows.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="py-6 px-3 text-center text-slate-500 font-bold">
+              ${currentAnalysisData.targetMonth}월에는 현재 남아있는 빈 날짜(공실) 구간이 없습니다.
+            </td>
+          </tr>
+        `;
+        return;
+      }
 
       currentAnalysisData.windows.forEach(w => {
         const curPrice = (w.pricing && w.pricing.perNightPrice) ? w.pricing.perNightPrice : currentAnalysisData.summary.avgOpenPerNightPrice;

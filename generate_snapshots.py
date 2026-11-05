@@ -23,18 +23,22 @@ def dump(path, data):
         json.dump({"ok": True, "generatedAt": now_iso(), "data": data}, f, ensure_ascii=False)
 
 
-print("1) Generating main analysis data for Nov 2026 & Dec 2026...")
+print("1) Generating main analysis data for Nov 2026, Dec 2026 & Jan 2027...")
 nov_data = server.analyze_listing(MY_ID, target_month=11, target_year=2026)
 dump(os.path.join(DATA_DIR, "analyze_2026_11.json"), nov_data)
 
 dec_data = server.analyze_listing(MY_ID, target_month=12, target_year=2026)
 dump(os.path.join(DATA_DIR, "analyze_2026_12.json"), dec_data)
 
+jan_data = server.analyze_listing(MY_ID, target_month=1, target_year=2027)
+dump(os.path.join(DATA_DIR, "analyze_2027_1.json"), jan_data)
+
 comp_ids = set()
-for nb in nov_data.get("ultraCloseNeighbors", []):
-    comp_ids.add(nb["listingId"])
-for c in nov_data.get("competitors", []):
-    comp_ids.add(c["listingId"])
+for m_data in (nov_data, dec_data, jan_data):
+    for nb in m_data.get("ultraCloseNeighbors", []):
+        comp_ids.add(nb["listingId"])
+    for c in m_data.get("competitors", []):
+        comp_ids.add(c["listingId"])
 
 print(f"2) Generating 1:1 detail modal snapshots for {len(comp_ids)} competitors...")
 comp_meta_by_id = {}
@@ -52,10 +56,14 @@ def save_comp(cid):
         print(f"  Failed {cid}: {e}")
 
 
-with ThreadPoolExecutor(max_workers=6) as ex:
+with ThreadPoolExecutor(max_workers=3) as ex:
     list(ex.map(save_comp, comp_ids))
 
-for d_obj, fname in [(nov_data, "analyze_2026_11.json"), (dec_data, "analyze_2026_12.json")]:
+for d_obj, fname in [
+    (nov_data, "analyze_2026_11.json"),
+    (dec_data, "analyze_2026_12.json"),
+    (jan_data, "analyze_2027_1.json"),
+]:
     for item in (d_obj.get("ultraCloseNeighbors", []) + d_obj.get("competitors", [])):
         cm = comp_meta_by_id.get(str(item.get("listingId")), {})
         badges = item.get("badges") or []
