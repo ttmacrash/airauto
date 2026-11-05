@@ -381,8 +381,8 @@ def scan_benchmark_targets(area_key: str = "saejeol", target_month: int = 11, ta
             if pdp_info.get("samplePhotos") and not t.get("samplePhotos"):
                 t["samplePhotos"] = pdp_info["samplePhotos"]
             t["hostName"] = pdp_info.get("hostName") or "호스트"
-            t["isSuperhost"] = pdp_info.get("isSuperhost") or ("게스트 선호" in t.get("badges", []))
-            t["isGuestFavorite"] = pdp_info.get("isGuestFavorite") or ("게스트 선호" in t.get("badges", []))
+            t["isSuperhost"] = bool(pdp_info.get("isSuperhost") or ("슈퍼호스트" in t.get("badges", [])))
+            t["isGuestFavorite"] = bool(pdp_info.get("isGuestFavorite") or ("게스트 선호" in t.get("badges", [])))
             t["keyAmenitiesPresent"] = pdp_info.get("keyAmenitiesPresent", [])
             t["missingKeyAmenities"] = pdp_info.get("missingKeyAmenities", [])
             t["photoCount"] = pdp_info.get("photoCount", 15)
@@ -508,6 +508,7 @@ def fetch_listing_metadata(listing_id: str):
         "ratingCount": "0",
         "categoryRatings": {},
         "isGuestFavorite": False,
+        "isSuperhost": False,
         "hostName": "호스트",
         "cohosts": [],
         "thumbnailUrl": None,
@@ -565,6 +566,7 @@ def fetch_listing_metadata(listing_id: str):
             hinfo = ((pdp.get("hostInfo") or {}).get("passportData") or {})
             if hinfo.get("name"):
                 meta["hostName"] = hinfo.get("name").replace("\u2068", "").replace("\u2069", "")
+            meta["isSuperhost"] = bool(hinfo.get("isSuperhost"))
 
             seo = pdp.get("seoFeatures") or {}
             if seo.get("relImageSrc"):
@@ -646,6 +648,7 @@ def fetch_ultra_close_neighbors(my_listing_id: str, lat: float, lng: float, targ
                 ]
                 pics = r.get("contextualPictures") or []
                 thumb = pics[0].get("picture") if pics else None
+                badges = [b.get("text") for b in (r.get("badges") or []) if b.get("text")]
 
                 candidates.append(
                     {
@@ -655,6 +658,9 @@ def fetch_ultra_close_neighbors(my_listing_id: str, lat: float, lng: float, targ
                         "rating": r.get("avgRatingLocalized") or "신규",
                         "specs": " · ".join(specs),
                         "thumbnailUrl": thumb,
+                        "badges": badges,
+                        "isGuestFavorite": "게스트 선호" in badges,
+                        "isSuperhost": "슈퍼호스트" in badges,
                         "url": f"https://www.airbnb.co.kr/rooms/{raw_id}",
                     }
                 )
@@ -862,6 +868,8 @@ def fetch_nearby_competitors(my_listing_id: str, lat: float, lng: float, check_i
                         "hasDiscount": orig_per_night is not None and orig_per_night > per_night,
                         "thumbnailUrl": thumb,
                         "badges": badges,
+                        "isGuestFavorite": "게스트 선호" in badges,
+                        "isSuperhost": "슈퍼호스트" in badges,
                         "url": f"https://www.airbnb.co.kr/rooms/{raw_id}?check_in={check_in}&check_out={check_out}&adults={adults}",
                     }
                 )

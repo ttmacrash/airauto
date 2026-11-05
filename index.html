@@ -517,12 +517,18 @@
         <!-- 상단 핵심 요약 비교 카드 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
           <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <div class="text-xs font-bold text-slate-500 mb-1">🏠 내 숙소 (기준)</div>
+            <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+              <span class="text-xs font-bold text-slate-500">🏠 내 숙소 (기준)</span>
+              <div id="compModalMyBadges" class="flex flex-wrap items-center gap-1"></div>
+            </div>
             <div id="compModalMyStats" class="text-base font-black text-slate-900"></div>
             <div id="compModalMyPrice" class="text-xs text-slate-600 mt-1"></div>
           </div>
           <div class="p-4 rounded-2xl bg-amber-50/70 border border-amber-300">
-            <div class="text-xs font-bold text-amber-900 mb-1">🏢 선택한 경쟁 숙소</div>
+            <div class="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+              <span class="text-xs font-bold text-amber-900">🏢 선택한 경쟁 숙소</span>
+              <div id="compModalTargetBadges" class="flex flex-wrap items-center gap-1"></div>
+            </div>
             <div id="compModalTargetStats" class="text-base font-black text-slate-900"></div>
             <div id="compModalTargetPrice" class="text-xs text-slate-700 mt-1"></div>
           </div>
@@ -1494,8 +1500,14 @@
         thumb.classList.remove('hidden');
       }
       const gfBadge = document.getElementById('guestFavBadge');
-      if (meta.isGuestFavorite) gfBadge.classList.remove('hidden');
-      else gfBadge.classList.add('hidden');
+      gfBadge.classList.remove('hidden');
+      if (meta.isGuestFavorite) {
+        gfBadge.className = 'px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold';
+        gfBadge.textContent = '🏆 게스트 선호';
+      } else {
+        gfBadge.className = 'px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200 text-xs font-bold';
+        gfBadge.textContent = '게스트 선호 아님';
+      }
 
       document.getElementById('ratingBadge').textContent = meta.ratingAverage
         ? `★ ${meta.ratingAverage} (후기 ${meta.ratingCount}개)`
@@ -1645,6 +1657,15 @@
             secretPills.push(`<span class="px-2 py-0.5 rounded bg-purple-50 text-purple-700 text-[11px] font-bold">다음달 선예약률 ${nb.nextMonthOccupancyRate}%</span>`);
           }
 
+          const isNbGuestFav = Boolean(nb.isGuestFavorite || (nb.badges && nb.badges.includes('게스트 선호')));
+          const isNbSuperhost = Boolean(nb.isSuperhost || (nb.badges && nb.badges.includes('슈퍼호스트')));
+          const nbGuestFavBadge = isNbGuestFav
+            ? `<span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300 text-[11px] font-extrabold">🏆 게스트 선호</span>`
+            : `<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200 text-[11px] font-bold">게스트 선호 아님</span>`;
+          const nbSuperhostBadge = isNbSuperhost
+            ? `<span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold">🏅 슈퍼호스트</span>`
+            : '';
+
           const card = document.createElement('div');
           card.className = 'relative p-4 rounded-2xl border-2 border-amber-300 hover:border-rose-500 bg-white shadow-sm hover:shadow-md transition overflow-hidden';
           card.innerHTML = `
@@ -1654,6 +1675,8 @@
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-center gap-1.5 mb-1">
                     <span class="px-2 py-0.5 rounded-md bg-amber-500 text-white text-[11px] font-extrabold">${distLabel}</span>
+                    ${nbGuestFavBadge}
+                    ${nbSuperhostBadge}
                     <span class="text-xs font-bold text-slate-700">★ ${nb.rating}</span>
                   </div>
                   <div class="font-extrabold text-sm text-slate-900 truncate">${nb.name}</div>
@@ -1722,6 +1745,15 @@
           ? `<span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-extrabold">내 숙소보다 ${formatKRW(Math.abs(diff))} 더 저렴</span>`
           : `<span class="px-2 py-0.5 rounded-md bg-slate-200 text-slate-700 text-xs font-bold">내 숙소보다 ${formatKRW(diff)} 비쌈</span>`;
 
+        const isCompGuestFav = Boolean(c.isGuestFavorite || (c.badges && c.badges.includes('게스트 선호')));
+        const isCompSuperhost = Boolean(c.isSuperhost || (c.badges && c.badges.includes('슈퍼호스트')));
+        const compGuestFavBadge = isCompGuestFav
+          ? `<span class="px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-extrabold">🏆 게스트 선호</span>`
+          : `<span class="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-500 border border-slate-200 text-[10px] font-bold">게스트 선호 아님</span>`;
+        const compSuperhostBadge = isCompSuperhost
+          ? `<span class="px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">🏅 슈퍼호스트</span>`
+          : '';
+
         const item = document.createElement('div');
         item.className = 'relative p-3.5 rounded-2xl border border-slate-200 hover:border-rose-400 hover:shadow-md transition bg-white overflow-hidden';
         item.innerHTML = `
@@ -1729,9 +1761,11 @@
             <div class="flex items-center gap-3.5">
               <img src="${c.thumbnailUrl || ''}" alt="경쟁숙소" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200 flex-shrink-0" />
               <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
+                <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 mb-0.5">
                   <span class="font-bold text-rose-600">거리 ${c.distanceM}m</span>
                   <span>·</span>
+                  ${compGuestFavBadge}
+                  ${compSuperhostBadge}
                   <span class="font-semibold text-slate-700">★ ${c.rating}</span>
                   ${c.hasDiscount ? '<span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">할인중</span>' : ''}
                 </div>
@@ -1897,6 +1931,22 @@
 
       const { myMeta, compMeta, summary, compOpenWindows, dailyComparison, targetMonth } = detail;
       document.getElementById('compModalTitle').textContent = `[${compMeta.title}] vs 내 숙소 1:1 가격·최소박수 비교`;
+
+      const myGfHtml = myMeta && myMeta.isGuestFavorite
+        ? `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 text-[11px] font-extrabold">🏆 게스트 선호</span>`
+        : `<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[11px] font-bold">게스트 선호 아님</span>`;
+      const myRatingHtml = myMeta && myMeta.ratingAverage
+        ? `<span class="px-1.5 py-0.5 rounded bg-white border border-slate-200 text-slate-700 text-[11px] font-bold">★ ${myMeta.ratingAverage} (${myMeta.ratingCount || 0})</span>`
+        : '';
+      document.getElementById('compModalMyBadges').innerHTML = `${myGfHtml}${myRatingHtml}`;
+
+      const compGfHtml = compMeta && compMeta.isGuestFavorite
+        ? `<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300 text-[11px] font-extrabold">🏆 게스트 선호</span>`
+        : `<span class="px-1.5 py-0.5 rounded bg-white/80 text-slate-500 border border-slate-200 text-[11px] font-bold">게스트 선호 아님</span>`;
+      const compRatingHtml = compMeta && compMeta.ratingAverage
+        ? `<span class="px-1.5 py-0.5 rounded bg-white border border-amber-200 text-slate-700 text-[11px] font-bold">★ ${compMeta.ratingAverage} (${compMeta.ratingCount || 0})</span>`
+        : '';
+      document.getElementById('compModalTargetBadges').innerHTML = `${compGfHtml}${compRatingHtml}`;
 
       document.getElementById('compModalMyStats').textContent = `${targetMonth}월 예약률 ${summary.myOccupancyRate}% (${summary.myBookedDays}박 예약 / ${summary.myOpenDays}박 공실)`;
       document.getElementById('compModalMyPrice').textContent = `내 평균 판매가: ${formatKRW(summary.myAvgPrice2p)}/박 (1~5인 단일가)`;
@@ -2230,7 +2280,10 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white text-xs font-black">타겟 #${idx + 1}</span>
                   <span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-extrabold">🔥 후기 ${t.ratingCount}개 (평점 ★${t.ratingAverage})</span>
-                  ${t.isSuperhost ? '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">🏅 슈퍼호스트/인기</span>' : ''}
+                  ${(t.isGuestFavorite || (t.badges && t.badges.includes('게스트 선호')))
+                    ? '<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold">🏆 게스트 선호</span>'
+                    : '<span class="px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200 text-xs font-bold">게스트 선호 아님</span>'}
+                  ${t.isSuperhost ? '<span class="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold">🏅 슈퍼호스트</span>' : ''}
                   <span class="text-xs text-slate-500 font-semibold">거리 ${t.distanceM}m · 호스트 ${t.hostName}</span>
                 </div>
                 <h4 class="text-base sm:text-lg font-black text-slate-900">${t.name}</h4>

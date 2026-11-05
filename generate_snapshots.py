@@ -37,11 +37,15 @@ for c in nov_data.get("competitors", []):
     comp_ids.add(c["listingId"])
 
 print(f"2) Generating 1:1 detail modal snapshots for {len(comp_ids)} competitors...")
+comp_meta_by_id = {}
 
 
 def save_comp(cid):
     try:
         detail = server.compare_competitor_detail(MY_ID, cid, target_month=11, target_year=2026)
+        cm = detail.get("compMeta") or {}
+        if cm:
+            comp_meta_by_id[str(cid)] = cm
         dump(os.path.join(DATA_DIR, f"comp_{cid}_2026_11.json"), detail)
         print(f"  Saved comp_{cid}_2026_11.json")
     except Exception as e:
@@ -50,5 +54,18 @@ def save_comp(cid):
 
 with ThreadPoolExecutor(max_workers=6) as ex:
     list(ex.map(save_comp, comp_ids))
+
+for d_obj, fname in [(nov_data, "analyze_2026_11.json"), (dec_data, "analyze_2026_12.json")]:
+    for item in (d_obj.get("ultraCloseNeighbors", []) + d_obj.get("competitors", [])):
+        cm = comp_meta_by_id.get(str(item.get("listingId")), {})
+        badges = item.get("badges") or []
+        is_gf = bool(item.get("isGuestFavorite") or ("게스트 선호" in badges) or cm.get("isGuestFavorite"))
+        is_sh = bool(item.get("isSuperhost") or ("슈퍼호스트" in badges) or cm.get("isSuperhost"))
+        if is_gf and "게스트 선호" not in badges:
+            badges.append("게스트 선호")
+        item["badges"] = badges
+        item["isGuestFavorite"] = is_gf
+        item["isSuperhost"] = is_sh
+    dump(os.path.join(DATA_DIR, fname), d_obj)
 
 print("Done generating static snapshots!")
