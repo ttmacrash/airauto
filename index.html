@@ -1424,9 +1424,11 @@
 
       try {
         let json = null;
+        let isSnapshot = false;
         try {
           const res = await fetch(`/api/analyze?url=${encodeURIComponent(urlInput)}&year=${year}&month=${month}`);
-          if (res.ok) {
+          const ct = (res.headers.get('content-type') || '').toLowerCase();
+          if (res.ok && ct.includes('application/json')) {
             json = await res.json();
           }
         } catch (apiErr) {
@@ -1434,9 +1436,12 @@
         }
 
         if (!json || !json.ok) {
-          const snapRes = await fetch(`./data/analyze_${year}_${month}.json`);
+          isSnapshot = true;
+          // 캐시를 피해 항상 최신 스냅샷 파일을 받아온다
+          const bust = `?t=${Date.now()}`;
+          const snapRes = await fetch(`./data/analyze_${year}_${month}.json${bust}`, { cache: 'no-store' });
           if (!snapRes.ok) {
-            const fallbackRes = await fetch(`./data/analyze_2026_11.json`);
+            const fallbackRes = await fetch(`./data/analyze_2026_11.json${bust}`, { cache: 'no-store' });
             json = await fallbackRes.json();
           } else {
             json = await snapRes.json();
@@ -1448,6 +1453,7 @@
         }
         currentAnalysisData = json.data;
         renderAnalysisResult(json.data);
+        showDataSourceNotice(isSnapshot, json.generatedAt);
       } catch (err) {
         document.getElementById('errorBox').classList.remove('hidden');
         document.getElementById('errorText').textContent = '오류: ' + err.message;
@@ -1455,6 +1461,25 @@
         document.getElementById('loadingBox').classList.add('hidden');
         document.getElementById('analyzeBtn').disabled = false;
         document.getElementById('analyzeBtnText').textContent = '무료 진단하기';
+      }
+    }
+
+    function showDataSourceNotice(isSnapshot, generatedAt) {
+      let box = document.getElementById('dataSourceNotice');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'dataSourceNotice';
+        box.className = 'max-w-5xl mx-auto mt-3 px-4';
+        const container = document.getElementById('resultContainer');
+        container.parentNode.insertBefore(box, container);
+      }
+      if (isSnapshot) {
+        const when = generatedAt
+          ? new Date(generatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+          : '정확한 시각 미상';
+        box.innerHTML = `<div class="px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold">🕒 저장된 데이터입니다 (기준: ${when}). 에어비앤비의 실시간 값과 다를 수 있으며, 자동으로 주기적으로 갱신됩니다.</div>`;
+      } else {
+        box.innerHTML = `<div class="px-3.5 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold">🟢 실시간 조회 결과입니다.</div>`;
       }
     }
 

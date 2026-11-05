@@ -7,6 +7,7 @@ import math
 import base64
 import datetime
 import subprocess
+import time
 import urllib.request
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
@@ -56,6 +57,7 @@ def haversine_m(lat1, lon1, lat2, lon2):
 
 
 _META_CACHE = {}
+META_CACHE_TTL_SEC = 30 * 60  # 숙소 정보(후기 수 등) 캐시 30분 후 자동 갱신
 
 AREA_COORDS = {
     "saejeol": {"name": "은평구 새절역·응암·증산 (6호선 라인)", "lat": 37.5942, "lng": 126.9117},
@@ -479,8 +481,9 @@ def scan_benchmark_targets(area_key: str = "saejeol", target_month: int = 11, ta
 
 
 def fetch_listing_metadata(listing_id: str):
-    if listing_id in _META_CACHE:
-        return dict(_META_CACHE[listing_id])
+    cached = _META_CACHE.get(listing_id)
+    if cached and (time.time() - cached.get("_cachedAt", 0)) < META_CACHE_TTL_SEC:
+        return {k: v for k, v in cached.items() if k != "_cachedAt"}
     url = f"https://www.airbnb.co.kr/rooms/{listing_id}"
     req = urllib.request.Request(url, headers=HEADERS)
     html = ""
@@ -571,7 +574,9 @@ def fetch_listing_metadata(listing_id: str):
             pass
 
     if meta["title"] != f"에어비앤비 숙소 #{listing_id}":
-        _META_CACHE[listing_id] = dict(meta)
+        entry = dict(meta)
+        entry["_cachedAt"] = time.time()
+        _META_CACHE[listing_id] = entry
     return meta
 
 
